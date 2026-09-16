@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0 text-danger"><i class="fa-solid fa-receipt me-2"></i>{{ t('other_expenses') }} नोंदवही</h4>
+    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+        <i class="fa-solid fa-plus me-1"></i> {{ t('add_expense') }}
+    </button>
+</div>
+
+<!-- Total Card -->
+<div class="card border-0 shadow-sm rounded-3 p-3 bg-white mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <div class="small text-muted font-weight-bold">एकूण सण खर्च (Total Other Expenses)</div>
+            <div class="fs-3 fw-bold text-danger">₹{{ "{:,.2f}".format(total_amount) }}</div>
+        </div>
+        <i class="fa-solid fa-file-invoice-dollar fa-2x text-danger opacity-50"></i>
+    </div>
+</div>
+
+<!-- Category Filter -->
+<div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+    <form method="GET" action="{{ url_for('expenses.index') }}" class="row g-2 align-items-center">
+        <div class="col-md-8">
+            <select name="category" class="form-select">
+                <option value="">-- सर्व खर्चाचे प्रकार (All Categories) --</option>
+                {% for cat_val, cat_label in categories %}
+                <option value="{{ cat_val }}" {% if category_filter == cat_val %}selected{% endif %}>{{ cat_label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-filter me-1"></i> फिल्टर करा</button>
+            <a href="{{ url_for('expenses.index') }}" class="btn btn-light border"><i class="fa-solid fa-rotate-left"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Expenses Table -->
+<div class="card border-0 shadow-sm rounded-4 p-3">
+    <div class="table-responsive">
+        <table class="table table-mandal mb-0">
+            <thead>
+                <tr>
+                    <th>दिनांक</th>
+                    <th>प्रवर्ग (Category)</th>
+                    <th>तपशील / वर्णन</th>
+                    <th>विक्रेता / दुकानदार</th>
+                    <th>रक्कम (₹)</th>
+                    <th>पद्धत</th>
+                    <th>बिल (Bill File)</th>
+                    <th>मंजूर करणारे</th>
+                    <th>कृती</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in records %}
+                <tr>
+                    <td>{{ e.expense_date }}</td>
+                    <td><span class="badge bg-warning text-dark">{{ e.category }}</span></td>
+                    <td class="fw-bold">{{ e.description }}</td>
+                    <td>{{ e.vendor or '-' }}</td>
+                    <td class="text-danger fw-bold">₹{{ "{:,.2f}".format(e.amount) }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ e.payment_method }}</span></td>
+                    <td>
+                        {% if e.bill_file %}
+                        <a href="{{ url_for('expenses.view_bill', filename=e.bill_file) }}" target="_blank" class="btn btn-sm btn-outline-info">
+                            <i class="fa-solid fa-paperclip me-1"></i> बिल पहा
+                        </a>
+                        {% else %}
+                        <span class="text-muted small">-</span>
+                        {% endif %}
+                    </td>
+                    <td><small>{{ e.approved_by or '-' }}</small></td>
+                    <td>
+                        {% if session.get('user_role') == 'admin' %}
+                        <form action="{{ url_for('expenses.delete', id=e.id) }}" method="POST" class="d-inline" onsubmit="return confirm('खात्री आहे? हा खर्च हटवला जाईल.');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">कोणताही खर्च सापडला नाही.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Expense Modal -->
+<div class="modal fade" id="addExpenseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-plus me-2"></i>नवीन खर्च नोंदवा</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('expenses.add') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">खर्चाचा प्रवर्ग (Category) *</label>
+                        <select name="category" class="form-select">
+                            {% for cat_val, cat_label in categories %}
+                            <option value="{{ cat_val }}">{{ cat_label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">खर्चाचा तपशील / वर्णन *</label>
+                        <input type="text" name="description" class="form-control" placeholder="उदा. मंडप रोषणाई भाडे" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">विक्रेता / दुकानदार</label>
+                            <input type="text" name="vendor" class="form-control" placeholder="ओम ट्रेडर्स">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">रक्कम (₹) *</label>
+                            <input type="number" step="0.01" name="amount" class="form-control" placeholder="1500" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">पेमेंट पद्धत *</label>
+                            <select name="payment_method" class="form-select">
+                                <option value="Cash">Cash (रोख)</option>
+                                <option value="UPI">UPI (GPay/PhonePe)</option>
+                                <option value="Bank">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">दिनांक</label>
+                            <input type="date" name="expense_date" class="form-control">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">बिल / पावती अपलोड (Bill Upload)</label>
+                        <input type="file" name="bill_file" class="form-control" accept="image/*,application/pdf">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">रद्द करा</button>
+                    <button type="submit" class="btn btn-danger">खर्च जतन करा</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

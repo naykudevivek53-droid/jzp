@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0 text-danger"><i class="fa-solid fa-music me-2"></i>{{ t('dj_hishob') }}</h4>
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDjIncomeModal">
+            <i class="fa-solid fa-plus me-1"></i> {{ t('add_dj_vargani') }}
+        </button>
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addDjExpenseModal">
+            <i class="fa-solid fa-plus me-1"></i> {{ t('add_dj_expense') }}
+        </button>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">एकूण DJ / मिरवणूक वर्गणी जमा</div>
+            <div class="fs-4 fw-bold text-success">₹{{ "{:,.2f}".format(income_total) }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">एकूण DJ / मिरवणूक खर्च</div>
+            <div class="fs-4 fw-bold text-danger">₹{{ "{:,.2f}".format(expense_total) }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">DJ हिशोब शिल्लक (Net DJ Balance)</div>
+            <div class="fs-4 fw-bold text-primary">₹{{ "{:,.2f}".format(net_dj_balance) }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- DJ Income -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+            <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-drum me-2"></i>DJ / मिरवणूक वर्गणी जमा (Collection)</h6>
+            <div class="table-responsive">
+                <table class="table table-mandal mb-0">
+                    <thead>
+                        <tr>
+                            <th>वर्गणीदार / समूह</th>
+                            <th>तपशील</th>
+                            <th>रक्कम (₹)</th>
+                            <th>पद्धत</th>
+                            <th>दिनांक</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in incomes %}
+                        <tr>
+                            <td class="fw-bold">{{ i.person_or_vendor }}</td>
+                            <td><small>{{ i.description or '-' }}</small></td>
+                            <td class="text-success fw-bold">₹{{ "{:,.2f}".format(i.amount) }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ i.payment_method }}</span></td>
+                            <td>{{ i.date }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center text-muted py-3">वर्गणी जमा नोंद नाही.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- DJ Expenses -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+            <h6 class="fw-bold text-danger mb-3"><i class="fa-solid fa-volume-high me-2"></i>DJ / मिरवणूक खर्च (Expenses)</h6>
+            <div class="table-responsive">
+                <table class="table table-mandal mb-0">
+                    <thead>
+                        <tr>
+                            <th>विक्रेता / सेवा</th>
+                            <th>तपशील</th>
+                            <th>रक्कम (₹)</th>
+                            <th>पद्धत</th>
+                            <th>दिनांक</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in expenses %}
+                        <tr>
+                            <td class="fw-bold">{{ e.person_or_vendor }}</td>
+                            <td><small>{{ e.description or '-' }}</small></td>
+                            <td class="text-danger fw-bold">₹{{ "{:,.2f}".format(e.amount) }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ e.payment_method }}</span></td>
+                            <td>{{ e.date }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center text-muted py-3">खर्च नोंद नाही.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Income -->
+<div class="modal fade" id="addDjIncomeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold">DJ वर्गणी जमा करा</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('dj_procession.add_income') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">वर्गणीदार / तरुण मंडळ *</label>
+                        <input type="text" name="person_name" class="form-control" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">रक्कम (₹) *</label>
+                            <input type="number" step="0.01" name="amount" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">पेमेंट पद्धत</label>
+                            <select name="payment_method" class="form-select">
+                                <option value="Cash">Cash</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Bank">Bank</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">रद्द करा</button>
+                    <button type="submit" class="btn btn-primary">जमा करा</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Expense -->
+<div class="modal fade" id="addDjExpenseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold">DJ खर्च नोंदवा</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('dj_procession.add_expense') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">विक्रेता / सेवा पुरवठादार *</label>
+                        <input type="text" name="vendor_name" class="form-control" placeholder="उदा. साऊंड सिस्टीम / ढोल ताशा" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">रक्कम (₹) *</label>
+                            <input type="number" step="0.01" name="amount" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">पेमेंट पद्धत</label>
+                            <select name="payment_method" class="form-select">
+                                <option value="Cash">Cash</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Bank">Bank</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">रद्द करा</button>
+                    <button type="submit" class="btn btn-danger">खर्च नोंदवा</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

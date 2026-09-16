@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Quick Action Buttons -->
+<div class="d-flex flex-wrap gap-2 mb-4">
+    <button class="btn btn-quick-action" data-bs-toggle="modal" data-bs-target="#addVarganiModal">
+        <i class="fa-solid fa-hand-holding-dollar me-1"></i> {{ t('add_vargani') }}
+    </button>
+    <button class="btn btn-warning text-dark font-weight-bold" data-bs-toggle="modal" data-bs-target="#addDonationModal">
+        <i class="fa-solid fa-bowl-rice me-1"></i> {{ t('add_donation') }}
+    </button>
+    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+        <i class="fa-solid fa-receipt me-1"></i> {{ t('add_expense') }}
+    </button>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDjVarganiModal">
+        <i class="fa-solid fa-music me-1"></i> {{ t('add_dj_vargani') }}
+    </button>
+    <a href="{{ url_for('members.index') }}" class="btn btn-secondary-action">
+        <i class="fa-solid fa-user-plus me-1"></i> {{ t('add_member') }}
+    </a>
+</div>
+
+<!-- Main Financial Summary Cards -->
+<div class="row g-3 mb-4">
+    <!-- Total Income -->
+    <div class="col-6 col-md-3">
+        <div class="card-stat">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="card-stat-title">{{ t('total_income') }}</div>
+                    <div class="card-stat-val success">₹{{ "{:,.2f}".format(summary.total_income) }}</div>
+                </div>
+                <div class="card-stat-icon icon-green">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+            <div class="small text-muted mt-2">
+                वर्गणी: ₹{{ "{:,.0f}".format(summary.total_vargani) }} | देणगी: ₹{{ "{:,.0f}".format(summary.total_mp_donation) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Expenses -->
+    <div class="col-6 col-md-3">
+        <div class="card-stat">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="card-stat-title">{{ t('total_expenses') }}</div>
+                    <div class="card-stat-val danger">₹{{ "{:,.2f}".format(summary.total_expenses) }}</div>
+                </div>
+                <div class="card-stat-icon icon-red">
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+                </div>
+            </div>
+            <div class="small text-muted mt-2">
+                महाप्रसाद: ₹{{ "{:,.0f}".format(summary.total_mp_expense) }} | इतर: ₹{{ "{:,.0f}".format(summary.total_other_expense) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Balance -->
+    <div class="col-6 col-md-3">
+        <div class="card-stat">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="card-stat-title">{{ t('current_balance') }}</div>
+                    <div class="card-stat-val primary">₹{{ "{:,.2f}".format(summary.current_balance) }}</div>
+                </div>
+                <div class="card-stat-icon icon-saffron">
+                    <i class="fa-solid fa-piggy-bank"></i>
+                </div>
+            </div>
+            <div class="small text-muted mt-2">
+                एकूण जमा - एकूण खर्च
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Vargani -->
+    <div class="col-6 col-md-3">
+        <div class="card-stat">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="card-stat-title">{{ t('pending_amount') }}</div>
+                    <div class="card-stat-val text-warning">₹{{ "{:,.2f}".format(summary.pending_vargani_total) }}</div>
+                </div>
+                <div class="card-stat-icon icon-gold">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+            </div>
+            <div class="small text-muted mt-2">
+                थकीत वर्गणी संकलन
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Balances Row -->
+<div class="row g-3 mb-4">
+    <div class="col-4 col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-money-bill-wave text-success fs-4"></i>
+                <div>
+                    <div class="small text-muted fw-bold">{{ t('cash_balance') }}</div>
+                    <div class="fs-5 fw-bold text-dark">₹{{ "{:,.2f}".format(summary.cash_balance) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-4 col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-mobile-screen-button text-primary fs-4"></i>
+                <div>
+                    <div class="small text-muted fw-bold">{{ t('upi_balance') }}</div>
+                    <div class="fs-5 fw-bold text-dark">₹{{ "{:,.2f}".format(summary.upi_balance) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-4 col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-building-columns text-info fs-4"></i>
+                <div>
+                    <div class="small text-muted fw-bold">{{ t('bank_balance') }}</div>
+                    <div class="fs-5 fw-bold text-dark">₹{{ "{:,.2f}".format(summary.bank_balance) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Chart Section -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+            <h6 class="fw-bold mb-3"><i class="fa-solid fa-chart-pie me-2 text-warning"></i>खर्च वर्गीकरण (Expense Categories)</h6>
+            <canvas id="expenseCategoryChart"></canvas>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+            <h6 class="fw-bold mb-3"><i class="fa-solid fa-chart-pie me-2 text-success"></i>पेमेंट पद्धती (Payment Methods)</h6>
+            <canvas id="paymentMethodChart"></canvas>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+            <h6 class="fw-bold mb-3"><i class="fa-solid fa-chart-line me-2 text-primary"></i>दैनिक जमा व खर्च (Daily Trends)</h6>
+            <canvas id="dailyTrendChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions Table -->
+<div class="card border-0 shadow-sm rounded-4 p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold m-0"><i class="fa-solid fa-history me-2 text-warning"></i>नवीनतम व्यवहार (Recent Transactions)</h6>
+        <a href="{{ url_for('transactions.index') }}" class="btn btn-sm btn-outline-primary rounded-pill">सर्व व्यवहार पहा</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-mandal mb-0">
+            <thead>
+                <tr>
+                    <th>आयडी</th>
+                    <th>दिनांक</th>
+                    <th>प्रकार</th>
+                    <th>प्रवर्ग</th>
+                    <th>तपशील</th>
+                    <th>जमा (₹)</th>
+                    <th>खर्च (₹)</th>
+                    <th>पद्धत</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in recent_transactions %}
+                <tr>
+                    <td><code>{{ t.transaction_id }}</code></td>
+                    <td>{{ t.date }}</td>
+                    <td>
+                        {% if t.type == 'INCOME' %}
+                        <span class="badge bg-success">जमा</span>
+                        {% else %}
+                        <span class="badge bg-danger">खर्च</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ t.category }}</td>
+                    <td>{{ t.description }}</td>
+                    <td class="text-success fw-bold">{% if t.income_amount > 0 %}₹{{ "{:,.2f}".format(t.income_amount) }}{% else %}-{% endif %}</td>
+                    <td class="text-danger fw-bold">{% if t.expense_amount > 0 %}₹{{ "{:,.2f}".format(t.expense_amount) }}{% else %}-{% endif %}</td>
+                    <td><span class="badge bg-light text-dark border">{{ t.payment_method }}</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-3">अद्याप कोणतेही व्यवहार उपलब्ध नाहीत.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Vargani Modal -->
+<div class="modal fade" id="addVarganiModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-hand-holding-dollar me-2"></i>नवीन वर्गणी जमा करा</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('vargani.add') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">वर्गणीदाराचे नाव *</label>
+                        <input type="text" name="contributor_name" class="form-control" placeholder="उदा. सुरेश पाटील" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">मोबाईल नंबर</label>
+                            <input type="tel" name="mobile" class="form-control" placeholder="9822000000">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">रक्कम (₹) *</label>
+                            <input type="number" step="0.01" name="amount" class="form-control" placeholder="501" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">पेमेंट पद्धत *</label>
+                            <select name="payment_method" class="form-select">
+                                <option value="Cash">Cash (रोख)</option>
+                                <option value="UPI">UPI (GPay/PhonePe)</option>
+                                <option value="Bank">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">दिनांक</label>
+                            <input type="date" name="payment_date" class="form-control" value="{{ now }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">पत्ता / गल्ली</label>
+                        <input type="text" name="address" class="form-control" placeholder="जागृती चौक">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">रद्द करा</button>
+                    <button type="submit" class="btn btn-quick-action">जमा करा व पावती तयार करा</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Expense Modal -->
+<div class="modal fade" id="addExpenseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-receipt me-2"></i>नवीन खर्च नोंदवा</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('expenses.add') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">खर्चाचा प्रवर्ग (Category) *</label>
+                        <select name="category" class="form-select">
+                            <option value="Idol">गणपती मूर्ती (Idol)</option>
+                            <option value="Decoration">डेकोरेसन / मंडप (Decoration)</option>
+                            <option value="DJ">DJ / साऊंड सिस्टम (DJ)</option>
+                            <option value="Band">बँड / ढोल ताशा (Band)</option>
+                            <option value="Pujan">पूजा साहित्य (Pujan)</option>
+                            <option value="Haar">हार / फुले (Garlands)</option>
+                            <option value="Food">अन्न / अल्पोपहार (Food)</option>
+                            <option value="Other">इतर खर्च (Other)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">खर्चाचा तपशील / वर्णन *</label>
+                        <input type="text" name="description" class="form-control" placeholder="उदा. मंडप रोषणाई" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">विक्रेता / दुकानदार</label>
+                            <input type="text" name="vendor" class="form-control" placeholder="ओम डेकोरेटर्स">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">रक्कम (₹) *</label>
+                            <input type="number" step="0.01" name="amount" class="form-control" placeholder="1000" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">पेमेंट पद्धत *</label>
+                            <select name="payment_method" class="form-select">
+                                <option value="Cash">Cash (रोख)</option>
+                                <option value="UPI">UPI (GPay/PhonePe)</option>
+                                <option value="Bank">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">बिल अपलोड करा (Optional)</label>
+                            <input type="file" name="bill_file" class="form-control" accept="image/*,application/pdf">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">रद्द करा</button>
+                    <button type="submit" class="btn btn-danger">खर्च सेव्ह करा</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Mahaprasad Donation Modal -->
+<div class="modal fade" id="addDonationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-bowl-rice me-2"></i>महाप्रसाद देणगी नोंदवा</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('mahaprasad.add_donation') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">देणगीदाराचे नाव *</label>
+                        <input type="text" name="donor_name" class="form-control" placeholder="उदा. तुकाराम महाराज ट्रस्ट" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">रक्कम (₹) *</label>
+                            <input type="number" step="0.01" name="amount" class="form-control" placeholder="5000" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">पेमेंट पद्धत *</label>
+                            <select name="payment_method" class="form-select">
+                                <option value="Cash">Cash (रोख)</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Bank">Bank</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">रद्द करा</button>
+                    <button type="submit" class="btn btn-success">देणगी जमा करा</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add DJ Vargani Modal -->
+<div class="modal fade" id="addDjVarganiModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-music me-2"></i>DJ / मिरवणूक वर्गणी जमा करा</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('dj_procession.add_income') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">वर्गणीदार / तरुण मंडळ नाव *</label>
+                        <input type="text" name="person_name" class="form-control" placeholder="उदा. युवा ग्रुप" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">रक्कम (₹) *</label>
+                            <input type="number" step="0.01" name="amount" class="form-control" placeholder="2500" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">पेमेंट पद्धत *</label>
+                            <select name="payment_method" class="form-select">
+                                <option value="Cash">Cash</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Bank">Bank</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">रद्द करा</button>
+                    <button type="submit" class="btn btn-primary">DJ वर्गणी सेव्ह करा</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

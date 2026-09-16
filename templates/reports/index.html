@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0 text-danger"><i class="fa-solid fa-file-invoice-dollar me-2"></i>{{ t('reports') }} (Financial Reports)</h4>
+    <a href="{{ url_for('reports.export_excel') }}" class="btn btn-success">
+        <i class="fa-solid fa-file-excel me-1"></i> Excel मध्ये रिपोर्ट डाऊनलोड करा
+    </a>
+</div>
+
+<!-- Report Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">एकूण जमा (Total Income)</div>
+            <div class="fs-4 fw-bold text-success">₹{{ "{:,.2f}".format(summary.total_income) }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">एकूण खर्च (Total Expenses)</div>
+            <div class="fs-4 fw-bold text-danger">₹{{ "{:,.2f}".format(summary.total_expenses) }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">अंतिम शिल्लक (Final Balance)</div>
+            <div class="fs-4 fw-bold text-primary">₹{{ "{:,.2f}".format(summary.current_balance) }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">एकूण वर्गणीदार</div>
+            <div class="fs-4 fw-bold text-dark">{{ summary.contributors_count }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Category-wise Expense Report -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+            <h6 class="fw-bold text-danger mb-3"><i class="fa-solid fa-list-ol me-2"></i>खर्च प्रवर्गनिहाय रिपोर्ट (Category-wise Expense Summary)</h6>
+            <div class="table-responsive">
+                <table class="table table-mandal mb-0">
+                    <thead>
+                        <tr>
+                            <th>खर्च प्रवर्ग (Category)</th>
+                            <th>एकूण रक्कम (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in category_summary %}
+                        <tr>
+                            <td class="fw-bold">{{ c.category }}</td>
+                            <td class="text-danger fw-bold">₹{{ "{:,.2f}".format(c.total) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="2" class="text-center text-muted py-3">माहिती उपलब्ध नाही.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Method-wise Transaction Report -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+            <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-credit-card me-2"></i>पेमेंट प्रकारनिहाय व्यवहार रिपोर्ट (Payment Method Summary)</h6>
+            <div class="table-responsive">
+                <table class="table table-mandal mb-0">
+                    <thead>
+                        <tr>
+                            <th>पेमेंट पद्धत</th>
+                            <th>एकूण जमा (₹)</th>
+                            <th>एकूण खर्च (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in method_summary %}
+                        <tr>
+                            <td class="fw-bold">{{ m.payment_method }}</td>
+                            <td class="text-success fw-bold">₹{{ "{:,.2f}".format(m.total_inc or 0) }}</td>
+                            <td class="text-danger fw-bold">₹{{ "{:,.2f}".format(m.total_exp or 0) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">माहिती उपलब्ध नाही.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

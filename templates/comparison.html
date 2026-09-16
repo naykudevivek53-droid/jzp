@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold m-0 text-danger"><i class="fa-solid fa-code-compare me-2"></i>{{ t('comparison_2025_2026') }}</h4>
+    <div class="text-muted small">२०२५ व २०२६ च्या आर्थिक जमा-खर्चाची तुलनात्मक माहिती</div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="text-start">आर्थिक घटक (Metric)</th>
+                    <th class="bg-secondary bg-opacity-10 text-dark">२०२५ हिशोब (2025 PDF Archive)</th>
+                    <th class="bg-warning bg-opacity-25 text-dark">२०२६ सक्रिय हिशोब (2026 Active)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-start fw-bold">१. मुख्य वर्गणी (Main Vargani)</td>
+                    <td class="fw-bold text-success">₹ {{ "{:,.2f}".format(s25.total_vargani) }}</td>
+                    <td class="fw-bold text-success">₹ {{ "{:,.2f}".format(s26.total_vargani) }}</td>
+                </tr>
+                <tr>
+                    <td class="text-start fw-bold">२. महाप्रसाद देणगी (Mahaprasad Donation)</td>
+                    <td class="fw-bold text-success">₹ {{ "{:,.2f}".format(s25.total_mp_donation) }}</td>
+                    <td class="fw-bold text-success">₹ {{ "{:,.2f}".format(s26.total_mp_donation) }}</td>
+                </tr>
+                <tr>
+                    <td class="text-start fw-bold">३. DJ वर्गणी (DJ Collection)</td>
+                    <td class="fw-bold text-success">₹ {{ "{:,.2f}".format(s25.total_dj_income) }}</td>
+                    <td class="fw-bold text-success">₹ {{ "{:,.2f}".format(s26.total_dj_income) }}</td>
+                </tr>
+                <tr class="table-success fw-bold">
+                    <td class="text-start">एकूण जमा (Total Income)</td>
+                    <td>₹ {{ "{:,.2f}".format(s25.total_income) }}</td>
+                    <td>₹ {{ "{:,.2f}".format(s26.total_income) }}</td>
+                </tr>
+                <tr>
+                    <td class="text-start fw-bold">४. महाप्रसाद खर्च (Mahaprasad Expense)</td>
+                    <td class="fw-bold text-danger">₹ {{ "{:,.2f}".format(s25.total_mp_expense) }}</td>
+                    <td class="fw-bold text-danger">₹ {{ "{:,.2f}".format(s26.total_mp_expense) }}</td>
+                </tr>
+                <tr>
+                    <td class="text-start fw-bold">५. इतर सण खर्च (Other Expense)</td>
+                    <td class="fw-bold text-danger">₹ {{ "{:,.2f}".format(s25.total_other_expense) }}</td>
+                    <td class="fw-bold text-danger">₹ {{ "{:,.2f}".format(s26.total_other_expense) }}</td>
+                </tr>
+                <tr>
+                    <td class="text-start fw-bold">६. DJ खर्च (DJ Expense)</td>
+                    <td class="fw-bold text-danger">₹ {{ "{:,.2f}".format(s25.total_dj_expense) }}</td>
+                    <td class="fw-bold text-danger">₹ {{ "{:,.2f}".format(s26.total_dj_expense) }}</td>
+                </tr>
+                <tr class="table-danger fw-bold">
+                    <td class="text-start">एकूण खर्च (Total Expenses)</td>
+                    <td>₹ {{ "{:,.2f}".format(s25.total_expenses) }}</td>
+                    <td>₹ {{ "{:,.2f}".format(s26.total_expenses) }}</td>
+                </tr>
+                <tr class="table-warning fw-bold fs-5">
+                    <td class="text-start">अंतिम शिल्लक (Final Balance)</td>
+                    <td class="text-primary">₹ {{ "{:,.2f}".format(s25.current_balance) }}</td>
+                    <td class="text-primary">₹ {{ "{:,.2f}".format(s26.current_balance) }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

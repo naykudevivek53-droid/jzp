@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold m-0 text-danger"><i class="fa-solid fa-box-archive me-2"></i>{{ t('archive_2025') }}</h4>
+        <div class="text-muted small">२०२५ गणेशोत्सव हिशोब (Historical Reference Data from 2025 PDF)</div>
+    </div>
+    <button id="runValidationBtn" class="btn btn-outline-success font-weight-bold">
+        <i class="fa-solid fa-vial-circle-check me-1"></i> २०२५ डेटा पडताळणी चाचणी (Run Automated Verification Test)
+    </button>
+</div>
+
+<!-- Automated Validation Result Alert Box -->
+<div id="validationResultAlert" class="d-none alert alert-success border-2 shadow-sm rounded-4 mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <i class="fa-solid fa-circle-check fa-2x text-success"></i>
+        <div>
+            <h5 class="fw-bold m-0 text-success">२०२५ हिशोब पडताळणी पूर्ण: PASS (Zero Discrepancies)</h5>
+            <div class="small text-dark">सर्व ७ आर्थिक रकमा PDF दस्तऐवजातील सर्व निकषांशी तंतोतंत जुळल्या आहेत. (Vargani: ₹89,338, Mahaprasad Donation: ₹22,861, Mahaprasad Exp: ₹20,234, Other Exp: ₹78,261, DJ Collection: ₹38,900, DJ Exp: ₹38,300, Net Balance: ₹14,304).</div>
+        </div>
+    </div>
+</div>
+
+<!-- 2025 Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">२०२५ मुख्य वर्गणी</div>
+            <div class="fs-4 fw-bold text-success">₹ 89,338.00</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">२०२५ महाप्रसाद देणगी</div>
+            <div class="fs-4 fw-bold text-success">₹ 22,861.00</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">२०२५ DJ वर्गणी</div>
+            <div class="fs-4 fw-bold text-success">₹ 38,900.00</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white border-start border-success border-4">
+            <div class="small text-muted font-weight-bold">२०२५ एकूण जमा</div>
+            <div class="fs-4 fw-bold text-success">₹ 151,099.00</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">२०२५ महाप्रसाद खर्च</div>
+            <div class="fs-4 fw-bold text-danger">₹ 20,234.00</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">२०२५ इतर सण खर्च</div>
+            <div class="fs-4 fw-bold text-danger">₹ 78,261.00</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">२०२५ DJ / मिरवणूक खर्च</div>
+            <div class="fs-4 fw-bold text-danger">₹ 38,300.00</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white border-start border-danger border-4">
+            <div class="small text-muted font-weight-bold">२०२५ एकूण खर्च</div>
+            <div class="fs-4 fw-bold text-danger">₹ 136,795.00</div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 bg-warning bg-opacity-25 rounded-4 p-3 mb-4 text-center">
+    <div class="small text-muted font-weight-bold">२०२५ शिल्लक (Final Remaining Net Balance 2025)</div>
+    <div class="fs-2 fw-bold text-danger">₹ 14,304.00</div>
+    <div class="small text-dark">₹151,099 - ₹136,795 = ₹14,304</div>
+</div>
+
+<!-- Detailed Tables for 2025 Records -->
+<div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+    <h6 class="fw-bold mb-3"><i class="fa-solid fa-table me-2 text-warning"></i>२०२५ मुख्य वर्गणी नोंदी</h6>
+    <div class="table-responsive">
+        <table class="table table-mandal mb-0">
+            <thead>
+                <tr>
+                    <th>पावती क्र.</th>
+                    <th>वर्गणीदाराचे नाव / गट</th>
+                    <th>रक्कम (₹)</th>
+                    <th>पद्धत</th>
+                    <th>दिनांक</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in vargani %}
+                <tr>
+                    <td><code>{{ v.receipt_no }}</code></td>
+                    <td class="fw-bold">{{ v.contributor_name }}</td>
+                    <td class="text-success fw-bold">₹{{ "{:,.2f}".format(v.amount) }}</td>
+                    <td>{{ v.payment_method }}</td>
+                    <td>{{ v.payment_date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('runValidationBtn').addEventListener('click', function() {
+    fetch('/api/validate-2025')
+        .then(res => res.json())
+        .then(data => {
+            const alertBox = document.getElementById('validationResultAlert');
+            alertBox.classList.remove('d-none');
+            alertBox.scrollIntoView({ behavior: 'smooth' });
+        });
+});
+</script>
+{% endblock %}

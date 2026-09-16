@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <h4 class="fw-bold m-0 text-danger"><i class="fa-solid fa-scale-balanced me-2"></i>{{ t('final_hishob') }} (गणेशोत्सव २०२६)</h4>
+    <button onclick="window.print()" class="btn btn-primary"><i class="fa-solid fa-print me-1"></i> अंतिम हिशोब प्रिंट करा</button>
+</div>
+
+<div class="card border-0 shadow-lg rounded-4 p-4 bg-white">
+    <div class="text-center border-bottom pb-3 mb-4">
+        <h3 class="fw-bold text-danger mb-1">{{ mandal_name }}</h3>
+        <h5 class="fw-bold text-dark mb-1">गणेशोत्सव २०२६ - अंतिम ताळेबंद (Final Hishob Statement)</h5>
+        <div class="text-muted small">सर्व जमा व खर्चाचा अधिकृत ताळेबंद आणि अंतिम शिल्लक</div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Income Ledger -->
+        <div class="col-md-6">
+            <div class="border border-success border-2 rounded-4 p-3 bg-light bg-opacity-25 h-100">
+                <h5 class="fw-bold text-success border-bottom border-success pb-2 mb-3">
+                    <i class="fa-solid fa-circle-plus me-1"></i> जमा बाजू (INCOME LEDGER)
+                </h5>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-borderless mb-0">
+                        <thead>
+                            <tr class="border-bottom">
+                                <th>तपशील (Head)</th>
+                                <th class="text-end">रक्कम (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>१. मुख्य गणेशोत्सव वर्गणी (Main Vargani)</td>
+                                <td class="text-end fw-bold">₹ {{ "{:,.2f}".format(summary.total_vargani) }}</td>
+                            </tr>
+                            <tr>
+                                <td>२. महाप्रसाद अन्नदान देणगी (Mahaprasad Donation)</td>
+                                <td class="text-end fw-bold">₹ {{ "{:,.2f}".format(summary.total_mp_donation) }}</td>
+                            </tr>
+                            <tr>
+                                <td>३. DJ व विसर्जन मिरवणूक वर्गणी (DJ Collection)</td>
+                                <td class="text-end fw-bold">₹ {{ "{:,.2f}".format(summary.total_dj_income) }}</td>
+                            </tr>
+                            <tr class="border-top border-2 border-success">
+                                <td class="fw-bold fs-5 text-success">एकूण जमा (TOTAL INCOME)</td>
+                                <td class="text-end fw-bold fs-5 text-success">₹ {{ "{:,.2f}".format(summary.total_income) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense Ledger -->
+        <div class="col-md-6">
+            <div class="border border-danger border-2 rounded-4 p-3 bg-light bg-opacity-25 h-100">
+                <h5 class="fw-bold text-danger border-bottom border-danger pb-2 mb-3">
+                    <i class="fa-solid fa-circle-minus me-1"></i> खर्च बाजू (EXPENSE LEDGER)
+                </h5>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-borderless mb-0">
+                        <thead>
+                            <tr class="border-bottom">
+                                <th>तपशील (Head)</th>
+                                <th class="text-end">रक्कम (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>१. महाप्रसाद वाटप व साहित्य खर्च (Mahaprasad Expense)</td>
+                                <td class="text-end fw-bold">₹ {{ "{:,.2f}".format(summary.total_mp_expense) }}</td>
+                            </tr>
+                            <tr>
+                                <td>२. सण व मंडप डेकोरेशन, मूर्ती इतर खर्च (Other Expenses)</td>
+                                <td class="text-end fw-bold">₹ {{ "{:,.2f}".format(summary.total_other_expense) }}</td>
+                            </tr>
+                            <tr>
+                                <td>३. DJ, साऊंड व मिरवणूक खर्च (DJ Expense)</td>
+                                <td class="text-end fw-bold">₹ {{ "{:,.2f}".format(summary.total_dj_expense) }}</td>
+                            </tr>
+                            <tr class="border-top border-2 border-danger">
+                                <td class="fw-bold fs-5 text-danger">एकूण खर्च (TOTAL EXPENSES)</td>
+                                <td class="text-end fw-bold fs-5 text-danger">₹ {{ "{:,.2f}".format(summary.total_expenses) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Remaining Balance Banner -->
+    <div class="card border-0 bg-warning bg-opacity-25 rounded-4 p-4 mt-4 text-center">
+        <div class="text-muted font-weight-bold">अंतिम शिल्लक = (एकूण जमा - एकूण खर्च)</div>
+        <div class="display-5 fw-bold text-danger my-1">₹ {{ "{:,.2f}".format(summary.current_balance) }}</div>
+        <div class="fw-bold text-dark">सध्याची मंडळ बँकेतील व रोख शिल्लक (Final Remaining Net Balance)</div>
+    </div>
+
+    <!-- Signatures -->
+    <div class="row mt-5 pt-4 text-center">
+        <div class="col-4">
+            <div class="fw-bold border-top border-dark pt-2">अध्यक्ष</div>
+        </div>
+        <div class="col-4">
+            <div class="fw-bold border-top border-dark pt-2">खजिनदार</div>
+        </div>
+        <div class="col-4">
+            <div class="fw-bold border-top border-dark pt-2">सचिव</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

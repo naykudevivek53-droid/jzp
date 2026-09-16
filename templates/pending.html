@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0 text-danger"><i class="fa-solid fa-clock-rotate-left me-2"></i>{{ t('pending_vargani') }} (Pending Contributions)</h4>
+    <button class="btn btn-quick-action" data-bs-toggle="modal" data-bs-target="#addPendingModal">
+        <i class="fa-solid fa-plus me-1"></i> थकीत नोंद जोडा
+    </button>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">एकूण अपेक्षित वर्गणी (Expected Total)</div>
+            <div class="fs-4 fw-bold text-dark">₹{{ "{:,.2f}".format(summary.expected) }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">जमा झालेली रक्कम (Paid Amount)</div>
+            <div class="fs-4 fw-bold text-success">₹{{ "{:,.2f}".format(summary.paid) }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">बाकी थकीत रक्कम (Remaining Amount)</div>
+            <div class="fs-4 fw-bold text-danger">₹{{ "{:,.2f}".format(summary.remaining) }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 p-3">
+    <div class="table-responsive">
+        <table class="table table-mandal mb-0">
+            <thead>
+                <tr>
+                    <th>व्यक्तीचे नाव</th>
+                    <th>मोबाईल</th>
+                    <th>अपेक्षित रक्कम (₹)</th>
+                    <th>जमा रक्कम (₹)</th>
+                    <th>उर्वरित थकीत (₹)</th>
+                    <th>देय दिनांक (Due Date)</th>
+                    <th>स्थिती</th>
+                    <th>कृती</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in records %}
+                <tr>
+                    <td class="fw-bold">{{ p.person_name }}</td>
+                    <td>{{ p.mobile or '-' }}</td>
+                    <td>₹{{ "{:,.2f}".format(p.expected_amount) }}</td>
+                    <td class="text-success fw-bold">₹{{ "{:,.2f}".format(p.paid_amount) }}</td>
+                    <td class="text-danger fw-bold">₹{{ "{:,.2f}".format(p.remaining_amount) }}</td>
+                    <td>{{ p.due_date or '-' }}</td>
+                    <td>
+                        {% if p.status == 'Paid' %}
+                        <span class="badge-status-paid">Paid</span>
+                        {% elif p.status == 'Partial' %}
+                        <span class="badge-status-partial">Partial</span>
+                        {% else %}
+                        <span class="badge-status-pending">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if p.remaining_amount > 0 %}
+                        <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#updatePayModal{{ p.id }}">
+                            <i class="fa-solid fa-indian-rupee-sign me-1"></i> जमा नोंदवा
+                        </button>
+                        {% else %}
+                        <span class="text-success small fw-bold"><i class="fa-solid fa-check"></i> पूर्ण</span>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <!-- Modal to update payment -->
+                <div class="modal fade" id="updatePayModal{{ p.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content rounded-4 border-0">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title fw-bold">थकीत वर्गणी जमा नोंदवा</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form action="{{ url_for('pending.update', id=p.id) }}" method="POST">
+                                <div class="modal-body">
+                                    <p><strong>नाव:</strong> {{ p.person_name }}</p>
+                                    <p><strong>उर्वरित थकीत:</strong> <span class="text-danger fw-bold">₹{{ "{:,.2f}".format(p.remaining_amount) }}</span></p>
+                                    <div class="mb-3">
+                                        <label class="form-label font-weight-bold">आता जमा झालेली रक्कम (₹) *</label>
+                                        <input type="number" step="0.01" name="add_paid" class="form-control" max="{{ p.remaining_amount }}" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">रद्द करा</button>
+                                    <button type="submit" class="btn btn-success">अद्ययावत करा</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-3">थकीत वर्गणी नोंद उपलब्ध नाही.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Pending Modal -->
+<div class="modal fade" id="addPendingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold">नवीन थकीत वर्गणी नोंद जोडा</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('pending.add') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">व्यक्तीचे नाव *</label>
+                        <input type="text" name="person_name" class="form-control" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">मोबाईल</label>
+                            <input type="tel" name="mobile" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">अपेक्षित वर्गणी रक्कम (₹) *</label>
+                            <input type="number" step="0.01" name="expected_amount" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">आता जमा रक्कम (₹)</label>
+                            <input type="number" step="0.01" name="paid_amount" class="form-control" value="0">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">देय दिनांक (Due Date)</label>
+                            <input type="date" name="due_date" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">रद्द करा</button>
+                    <button type="submit" class="btn btn-danger">नोंद सेव्ह करा</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

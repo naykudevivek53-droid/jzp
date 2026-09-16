@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0 text-danger"><i class="fa-solid fa-calendar-day me-2"></i>{{ t('daily_hishob') }} (Daily Accounts)</h4>
+    <form method="GET" action="{{ url_for('daily_accounts.index') }}" class="d-flex gap-2">
+        <input type="date" name="date" value="{{ selected_date }}" class="form-control">
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass me-1"></i> पहा</button>
+    </form>
+</div>
+
+<!-- Date Calculation Card -->
+<div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+        <h5 class="fw-bold m-0 text-dark">दिनांक: <span class="text-primary">{{ daily_data.date }}</span> चा दैनिक हिशोब</h5>
+        <span class="badge bg-warning text-dark fs-6">Auto-Calculated</span>
+    </div>
+
+    <!-- Main Calculation Formula Bar -->
+    <div class="row text-center g-3 mb-4">
+        <div class="col-md-3">
+            <div class="p-3 bg-light rounded-3">
+                <div class="small text-muted font-weight-bold">आरंभीची शिल्लक (Opening Balance)</div>
+                <div class="fs-4 fw-bold text-secondary">₹{{ "{:,.2f}".format(daily_data.opening_balance) }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-light rounded-3 border-start border-success border-4">
+                <div class="small text-muted font-weight-bold">+ आजची जमा (Today's Collection)</div>
+                <div class="fs-4 fw-bold text-success">+ ₹{{ "{:,.2f}".format(daily_data.today_income) }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-light rounded-3 border-start border-danger border-4">
+                <div class="small text-muted font-weight-bold">- आजचा खर्च (Today's Expense)</div>
+                <div class="fs-4 fw-bold text-danger">- ₹{{ "{:,.2f}".format(daily_data.today_expenses) }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-warning bg-opacity-25 rounded-3 border-start border-warning border-4">
+                <div class="small text-muted font-weight-bold">= अखेरची शिल्लक (Closing Balance)</div>
+                <div class="fs-4 fw-bold text-dark">= ₹{{ "{:,.2f}".format(daily_data.closing_balance) }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mode-wise Breakdown Cards -->
+    <h6 class="fw-bold mb-3"><i class="fa-solid fa-coins me-2 text-warning"></i>पेमेंट प्रकारानुसार दैनिक हिशोब (Mode-wise Breakdown)</h6>
+    <div class="row g-3">
+        <!-- Cash Ledger -->
+        <div class="col-md-4">
+            <div class="card border border-success border-opacity-25 rounded-3 p-3 bg-white">
+                <div class="fw-bold text-success mb-2"><i class="fa-solid fa-money-bill-wave me-1"></i> Cash (कॅश हिशोब)</div>
+                <div class="d-flex justify-content-between small py-1 border-bottom">
+                    <span>Cash आरंभी:</span> <strong>₹{{ "{:,.2f}".format(daily_data.cash_opening) }}</strong>
+                </div>
+                <div class="d-flex justify-content-between small py-1 border-bottom text-success">
+                    <span>+ आजची रोख जमा:</span> <strong>+ ₹{{ "{:,.2f}".format(daily_data.today_cash_inc) }}</strong>
+                </div>
+                <div class="d-flex justify-content-between small py-1 border-bottom text-danger">
+                    <span>- आजचा रोख खर्च:</span> <strong>- ₹{{ "{:,.2f}".format(daily_data.today_cash_exp) }}</strong>
+                </div>
+                <div class="d-flex justify-content-between font-weight-bold pt-2 fs-6">
+                    <span>= रोख अखेर शिल्लक:</span> <span class="text-success">₹{{ "{:,.2f}".format(daily_data.cash_closing) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- UPI Ledger -->
+        <div class="col-md-4">
+            <div class="card border border-primary border-opacity-25 rounded-3 p-3 bg-white">
+                <div class="fw-bold text-primary mb-2"><i class="fa-solid fa-mobile-screen-button me-1"></i> UPI (जीपे / फोनपे)</div>
+                <div class="d-flex justify-content-between small py-1 border-bottom text-success">
+                    <span>+ आजची UPI जमा:</span> <strong>+ ₹{{ "{:,.2f}".format(daily_data.today_upi_inc) }}</strong>
+                </div>
+                <div class="d-flex justify-content-between small py-1 border-bottom text-danger">
+                    <span>- आजचा UPI खर्च:</span> <strong>- ₹{{ "{:,.2f}".format(daily_data.today_upi_exp) }}</strong>
+                </div>
+                <div class="d-flex justify-content-between font-weight-bold pt-2 fs-6">
+                    <span>= एकूण UPI शिल्लक:</span> <span class="text-primary">₹{{ "{:,.2f}".format(daily_data.upi_balance) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank Ledger -->
+        <div class="col-md-4">
+            <div class="card border border-info border-opacity-25 rounded-3 p-3 bg-white">
+                <div class="fw-bold text-info mb-2"><i class="fa-solid fa-building-columns me-1"></i> Bank (बँक खाते)</div>
+                <div class="d-flex justify-content-between small py-1 border-bottom text-success">
+                    <span>+ आजची बँक जमा:</span> <strong>+ ₹{{ "{:,.2f}".format(daily_data.today_bank_inc) }}</strong>
+                </div>
+                <div class="d-flex justify-content-between small py-1 border-bottom text-danger">
+                    <span>- आजचा बँक खर्च:</span> <strong>- ₹{{ "{:,.2f}".format(daily_data.today_bank_exp) }}</strong>
+                </div>
+                <div class="d-flex justify-content-between font-weight-bold pt-2 fs-6">
+                    <span>= एकूण बँक शिल्लक:</span> <span class="text-info">₹{{ "{:,.2f}".format(daily_data.bank_balance) }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transactions of Selected Date -->
+<div class="card border-0 shadow-sm rounded-4 p-3">
+    <h6 class="fw-bold mb-3"><i class="fa-solid fa-list me-2 text-primary"></i>या तारखेचे सर्व व्यवहार (Transactions on {{ daily_data.date }})</h6>
+    <div class="table-responsive">
+        <table class="table table-mandal mb-0">
+            <thead>
+                <tr>
+                    <th>आयडी</th>
+                    <th>प्रकार</th>
+                    <th>प्रवर्ग</th>
+                    <th>तपशील</th>
+                    <th>जमा (₹)</th>
+                    <th>खर्च (₹)</th>
+                    <th>पद्धत</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in today_transactions %}
+                <tr>
+                    <td><code>{{ t.transaction_id }}</code></td>
+                    <td>
+                        {% if t.type == 'INCOME' %}
+                        <span class="badge bg-success">जमा</span>
+                        {% else %}
+                        <span class="badge bg-danger">खर्च</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ t.category }}</td>
+                    <td>{{ t.description }}</td>
+                    <td class="text-success fw-bold">{% if t.income_amount > 0 %}₹{{ "{:,.2f}".format(t.income_amount) }}{% else %}-{% endif %}</td>
+                    <td class="text-danger fw-bold">{% if t.expense_amount > 0 %}₹{{ "{:,.2f}".format(t.expense_amount) }}{% else %}-{% endif %}</td>
+                    <td><span class="badge bg-light text-dark border">{{ t.payment_method }}</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-3">या तारखेला कोणतेही व्यवहार झाले नाहीत.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

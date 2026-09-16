@@ -1,0 +1,334 @@
+/* Ganesh Mandal 2026 Custom CSS Theme */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-saffron: #E65100;
+    --primary-orange: #FF6D00;
+    --secondary-gold: #FFB300;
+    --gold-light: #FFF8E1;
+    --accent-red: #D50000;
+    --bg-light: #F8F9FA;
+    --card-bg: #FFFFFF;
+    --text-dark: #1F2937;
+    --text-muted: #6B7280;
+    --border-color: #E5E7EB;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 10px 25px rgba(230,81,0,0.12);
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+}
+
+body {
+    font-family: 'Noto Sans Devanagari', 'Outfit', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+/* Header Navbar */
+.navbar-mandal {
+    background: linear-gradient(135deg, #BF360C 0%, #E65100 50%, #FF6D00 100%);
+    box-shadow: 0 4px 20px rgba(191, 54, 12, 0.25);
+    padding: 0.75rem 1.5rem;
+}
+
+.navbar-brand-title {
+    color: #FFFFFF !important;
+    font-weight: 700;
+    font-size: 1.25rem;
+    letter-spacing: -0.2px;
+}
+
+.navbar-brand-sub {
+    color: #FFE0B2;
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.lang-switch-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #FFFFFF;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.lang-switch-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    color: #FFFFFF;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+    background-color: #FFFFFF;
+    border-right: 1px solid var(--border-color);
+    min-height: calc(100vh - 64px);
+    padding: 1.25rem 0.75rem;
+}
+
+.nav-link-mandal {
+    color: var(--text-dark);
+    font-weight: 500;
+    padding: 0.65rem 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+
+.nav-link-mandal:hover, .nav-link-mandal.active {
+    background-color: #FFF3E0;
+    color: var(--primary-saffron);
+    font-weight: 700;
+}
+
+.nav-link-mandal i {
+    font-size: 1.1rem;
+    color: var(--primary-saffron);
+}
+
+/* Dashboard Cards */
+.card-stat {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+}
+
+.card-stat:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.card-stat-title {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.card-stat-val {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 0;
+}
+
+.card-stat-val.primary { color: var(--primary-saffron); }
+.card-stat-val.success { color: #2E7D32; }
+.card-stat-val.danger { color: #C62828; }
+.card-stat-val.info { color: #1565C0; }
+
+.card-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.icon-saffron { background-color: #FFF3E0; color: var(--primary-saffron); }
+.icon-green { background-color: #E8F5E9; color: #2E7D32; }
+.icon-red { background-color: #FFEBEE; color: #C62828; }
+.icon-blue { background-color: #E3F2FD; color: #1565C0; }
+.icon-gold { background-color: #FFF8E1; color: #F57F17; }
+
+/* Quick Action Buttons */
+.btn-quick-action {
+    background: linear-gradient(135deg, #E65100, #FF6D00);
+    color: #FFFFFF;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1.25rem;
+    box-shadow: 0 4px 10px rgba(230,81,0,0.25);
+    transition: all 0.2s ease;
+}
+
+.btn-quick-action:hover {
+    background: linear-gradient(135deg, #BF360C, #E65100);
+    color: #FFFFFF;
+    transform: translateY(-2px);
+}
+
+.btn-secondary-action {
+    background: #FFFFFF;
+    color: var(--text-dark);
+    border: 1px solid var(--border-color);
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary-action:hover {
+    background: #F3F4F6;
+    color: var(--primary-saffron);
+}
+
+/* Custom Table */
+.table-mandal {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #FFFFFF;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.table-mandal th {
+    background-color: #F9FAFB;
+    color: var(--text-dark);
+    font-weight: 700;
+    padding: 1rem;
+    font-size: 0.88rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.table-mandal td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+    font-size: 0.95rem;
+}
+
+.table-mandal tbody tr:hover {
+    background-color: #FFFDE7;
+}
+
+/* Badges */
+.badge-status-paid {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.badge-status-partial {
+    background-color: #FFF8E1;
+    color: #F57F17;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.badge-status-pending {
+    background-color: #FFEBEE;
+    color: #C62828;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+/* Printable Receipt Card */
+.receipt-paper {
+    background: #FFFFFF;
+    border: 2px solid #E65100;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    max-width: 750px;
+    margin: 2rem auto;
+    position: relative;
+}
+
+.receipt-header {
+    text-align: center;
+    border-bottom: 2px dashed #E65100;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.receipt-title {
+    color: #E65100;
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.receipt-badge {
+    background-color: #FFF3E0;
+    color: #E65100;
+    font-weight: 700;
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 20px;
+    margin-top: 8px;
+}
+
+.receipt-amount-box {
+    background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+    border: 2px solid #FF6D00;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0;
+}
+
+.receipt-amount-num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #BF360C;
+}
+
+/* Printable adjustments */
+@media print {
+    body { background: white; }
+    .navbar-mandal, .sidebar, .btn, .no-print { display: none !important; }
+    .receipt-paper { border: 2px solid #000; box-shadow: none; margin: 0; padding: 1.5rem; }
+    .main-content { width: 100% !important; margin: 0 !important; }
+}
+
+/* Mobile Navigation Bar */
+.mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #FFFFFF;
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
+    z-index: 1050;
+    padding: 6px 0;
+}
+
+@media (max-width: 991.98px) {
+    .sidebar { display: none; }
+    .mobile-bottom-nav { display: flex; justify-content: space-around; }
+    .mobile-nav-item {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        text-align: center;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .mobile-nav-item i { font-size: 1.3rem; margin-bottom: 2px; }
+    .mobile-nav-item.active { color: var(--primary-saffron); font-weight: 700; }
+    body { padding-bottom: 70px; }
+}

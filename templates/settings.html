@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0 text-danger"><i class="fa-solid fa-gear me-2"></i>{{ t('settings') }} (Admin Settings & Backup)</h4>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('settings.download_backup') }}" class="btn btn-outline-primary">
+            <i class="fa-solid fa-database me-1"></i> डेटाबेस बॅकअप डाऊनलोड करा (Database Backup)
+        </a>
+        <a href="{{ url_for('audit.index') }}" class="btn btn-outline-dark">
+            <i class="fa-solid fa-shield-halved me-1"></i> ऑडिट लॉग पहा (Audit Trail)
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Mandal Info Settings -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-synagogue me-2 text-warning"></i>मंडळ माहिती (Mandal Details)</h5>
+            <form action="{{ url_for('settings.index') }}" method="POST">
+                <div class="mb-3">
+                    <label class="form-label font-weight-bold">मंडळाचे नाव (मराठी)</label>
+                    <input type="text" name="mandal_name_mr" class="form-control" value="{{ settings.get('mandal_name_mr', 'जागृती चौक सार्वजनिक गणेश मंडळ') }}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label font-weight-bold">पत्ता (Address)</label>
+                    <input type="text" name="address" class="form-control" value="{{ settings.get('address', 'जागृती चौक, सांगली') }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label font-weight-bold">संपर्क क्रमांक (Contact Phone)</label>
+                    <input type="text" name="contact_number" class="form-control" value="{{ settings.get('contact_number', '+९१ ९८२२० ११२२३') }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label font-weight-bold">पावती प्रीफिक्स (Receipt Prefix)</label>
+                    <input type="text" name="receipt_prefix" class="form-control" value="{{ settings.get('receipt_prefix', 'JCM-2026-') }}">
+                </div>
+                <button type="submit" class="btn btn-quick-action w-100">सेटिंग्ज जतन करा (Save Settings)</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Accounts List -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-users-gear me-2 text-primary"></i>सिस्टम वापरकर्ते (System Users)</h5>
+            <div class="table-responsive">
+                <table class="table table-mandal mb-0">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Full Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td><code>{{ u.username }}</code></td>
+                            <td class="fw-bold">{{ u.full_name }}</td>
+                            <td><span class="badge bg-warning text-dark">{{ u.role }}</span></td>
+                            <td><span class="badge bg-success">Active</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

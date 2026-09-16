@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold m-0 text-danger"><i class="fa-solid fa-shield-halved me-2"></i>{{ t('audit_log') }} (Audit Trail)</h4>
+    <div class="text-muted small">सर्व आर्थिक बदल, नोंदी व क्रियांची नोंदवही</div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 p-3">
+    <div class="table-responsive">
+        <table class="table table-mandal mb-0">
+            <thead>
+                <tr>
+                    <th>वेळ (Timestamp)</th>
+                    <th>वापरकर्ता (User)</th>
+                    <th>क्रिया (Action)</th>
+                    <th>तक्ता (Table)</th>
+                    <th>नोंद आयडी</th>
+                    <th>नवी माहिती / तपशील</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td><small>{{ log.timestamp }}</small></td>
+                    <td class="fw-bold">{{ log.username }}</td>
+                    <td>
+                        {% if log.action == 'CREATE' %}
+                        <span class="badge bg-success">CREATE</span>
+                        {% elif log.action == 'UPDATE' %}
+                        <span class="badge bg-warning text-dark">UPDATE</span>
+                        {% elif log.action == 'DELETE' %}
+                        <span class="badge bg-danger">DELETE</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ log.action }}</span>
+                        {% endif %}
+                    </td>
+                    <td><code>{{ log.record_type }}</code></td>
+                    <td>{{ log.record_id or '-' }}</td>
+                    <td><small>{{ log.new_value or '-' }}</small></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-muted py-3">कोणतेही ऑडिट लॉग उपलब्ध नाहीत.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

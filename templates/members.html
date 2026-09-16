@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0 text-danger"><i class="fa-solid fa-users me-2"></i>{{ t('members') }} (Mandal Members Directory)</h4>
+    {% if session.get('user_role') == 'admin' %}
+    <button class="btn btn-quick-action" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+        <i class="fa-solid fa-plus me-1"></i> {{ t('add_member') }}
+    </button>
+    {% endif %}
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 p-3">
+    <div class="table-responsive">
+        <table class="table table-mandal mb-0">
+            <thead>
+                <tr>
+                    <th>आयडी</th>
+                    <th>नाव</th>
+                    <th>पद / भूमिका (Role)</th>
+                    <th>मोबाईल नंबर</th>
+                    <th>पत्ता</th>
+                    <th>सामील दिनांक</th>
+                    <th>स्थिती</th>
+                    {% if session.get('user_role') == 'admin' %}<th>कृती</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in members %}
+                <tr>
+                    <td><code>MEM-{{ m.id }}</code></td>
+                    <td class="fw-bold">{{ m.name }}</td>
+                    <td><span class="badge bg-warning text-dark fs-6">{{ m.role }}</span></td>
+                    <td>{{ m.mobile or '-' }}</td>
+                    <td>{{ m.address or '-' }}</td>
+                    <td>{{ m.join_date or '-' }}</td>
+                    <td><span class="badge bg-success">Active</span></td>
+                    {% if session.get('user_role') == 'admin' %}
+                    <td>
+                        <form action="{{ url_for('members.delete', id=m.id) }}" method="POST" onsubmit="return confirm('खात्री आहे? सदस्य हटवला जाईल.');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-3">कोणताही सदस्य उपलब्ध नाही.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Member Modal -->
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-plus me-2"></i>नवीन सदस्य जोडा</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('members.add') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">सदस्याचे नाव *</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">मोबाईल नंबर</label>
+                            <input type="tel" name="mobile" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">पद / भूमिका *</label>
+                            <select name="role" class="form-select">
+                                {% for r_val, r_label in roles %}
+                                <option value="{{ r_val }}">{{ r_label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">पत्ता</label>
+                        <input type="text" name="address" class="form-control" placeholder="जागृती चौक">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">रद्द करा</button>
+                    <button type="submit" class="btn btn-quick-action">सदस्य जोडा</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

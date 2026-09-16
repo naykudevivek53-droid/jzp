@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0 text-danger"><i class="fa-solid fa-bowl-rice me-2"></i>{{ t('mahaprasad') }} हिशोब</h4>
+    <div class="d-flex gap-2">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDonationModal">
+            <i class="fa-solid fa-plus me-1"></i> {{ t('add_donation') }}
+        </button>
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addMpExpenseModal">
+            <i class="fa-solid fa-plus me-1"></i> {{ t('add_mahaprasad_expense') }}
+        </button>
+    </div>
+</div>
+
+<!-- Summary -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">एकूण महाप्रसाद देणगी जमा</div>
+            <div class="fs-4 fw-bold text-success">₹{{ "{:,.2f}".format(donation_total) }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">एकूण महाप्रसाद खर्च</div>
+            <div class="fs-4 fw-bold text-danger">₹{{ "{:,.2f}".format(expense_total) }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <div class="small text-muted font-weight-bold">महाप्रसाद शिल्लक (Net Balance)</div>
+            <div class="fs-4 fw-bold text-primary">₹{{ "{:,.2f}".format(net_mp_balance) }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Mahaprasad Donations -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+            <h6 class="fw-bold text-success mb-3"><i class="fa-solid fa-hand-holding-heart me-2"></i>महाप्रसाद देणगी (Donations)</h6>
+            <div class="table-responsive">
+                <table class="table table-mandal mb-0">
+                    <thead>
+                        <tr>
+                            <th>पावती क्र.</th>
+                            <th>देणगीदाराचे नाव</th>
+                            <th>रक्कम (₹)</th>
+                            <th>पद्धत</th>
+                            <th>दिनांक</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in donations %}
+                        <tr>
+                            <td><code>{{ d.receipt_no }}</code></td>
+                            <td class="fw-bold">{{ d.donor_name }}</td>
+                            <td class="text-success fw-bold">₹{{ "{:,.2f}".format(d.amount) }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ d.payment_method }}</span></td>
+                            <td>{{ d.payment_date }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center text-muted py-3">देणगी नोंद उपलब्ध नाही.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mahaprasad Expenses -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+            <h6 class="fw-bold text-danger mb-3"><i class="fa-solid fa-cart-shopping me-2"></i>महाप्रसाद खर्च (Expenses)</h6>
+            <div class="table-responsive">
+                <table class="table table-mandal mb-0">
+                    <thead>
+                        <tr>
+                            <th>खर्चाचे नाव / साहित्य</th>
+                            <th>विक्रेता</th>
+                            <th>रक्कम (₹)</th>
+                            <th>पद्धत</th>
+                            <th>दिनांक</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in expenses %}
+                        <tr>
+                            <td class="fw-bold">{{ e.item_name }}</td>
+                            <td>{{ e.vendor or '-' }}</td>
+                            <td class="text-danger fw-bold">₹{{ "{:,.2f}".format(e.amount) }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ e.payment_method }}</span></td>
+                            <td>{{ e.expense_date }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center text-muted py-3">खर्च नोंद उपलब्ध नाही.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 1: Add Donation -->
+<div class="modal fade" id="addDonationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-plus me-2"></i>महाप्रसाद देणगी नोंदवा</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('mahaprasad.add_donation') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">पावती क्र.</label>
+                        <input type="text" name="receipt_no" class="form-control bg-light" value="{{ auto_receipt }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">देणगीदाराचे नाव *</label>
+                        <input type="text" name="donor_name" class="form-control" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">मोबाईल</label>
+                            <input type="tel" name="mobile" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">रक्कम (₹) *</label>
+                            <input type="number" step="0.01" name="amount" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">पेमेंट पद्धत</label>
+                            <select name="payment_method" class="form-select">
+                                <option value="Cash">Cash</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Bank">Bank</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">दिनांक</label>
+                            <input type="date" name="payment_date" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">रद्द करा</button>
+                    <button type="submit" class="btn btn-success">सेव्ह करा</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 2: Add MP Expense -->
+<div class="modal fade" id="addMpExpenseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-plus me-2"></i>महाप्रसाद खर्च नोंदवा</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('mahaprasad.add_expense') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">साहित्य / खर्चाचे नाव *</label>
+                        <input type="text" name="item_name" class="form-control" placeholder="उदा. तांदूळ, डाळ खरेदी" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">विक्रेता / दुकानदार</label>
+                            <input type="text" name="vendor" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">रक्कम (₹) *</label>
+                            <input type="number" step="0.01" name="amount" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">पेमेंट पद्धत</label>
+                            <select name="payment_method" class="form-select">
+                                <option value="Cash">Cash</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Bank">Bank</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">दिनांक</label>
+                            <input type="date" name="expense_date" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">रद्द करा</button>
+                    <button type="submit" class="btn btn-danger">खर्च नोंदवा</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

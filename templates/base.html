@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ mandal_name }} - {{ festival_title }}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+</head>
+<body>
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-mandal sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('dashboard.index') }}">
+                <i class="fa-solid fa-om fa-2x text-warning"></i>
+                <div>
+                    <div class="navbar-brand-title">{{ mandal_name }}</div>
+                    <div class="navbar-brand-sub">{{ festival_title }}</div>
+                </div>
+            </a>
+
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <!-- Language Switcher -->
+                {% if lang == 'mr' %}
+                <a href="{{ url_for('auth.set_language', lang_code='en') }}" class="btn lang-switch-btn" title="Switch to English">
+                    <i class="fa-solid fa-language me-1"></i> English
+                </a>
+                {% else %}
+                <a href="{{ url_for('auth.set_language', lang_code='mr') }}" class="btn lang-switch-btn" title="मराठीमध्ये बदला">
+                    <i class="fa-solid fa-language me-1"></i> मराठी
+                </a>
+                {% endif %}
+
+                {% if session.get('user_id') %}
+                <div class="dropdown">
+                    <button class="btn btn-outline-light dropdown-toggle rounded-pill px-3 py-1 font-weight-bold" type="button" data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-circle-user me-1 text-warning"></i> {{ current_user_name }} ({{ current_user_role }})
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                        <li><a class="dropdown-item" href="{{ url_for('settings.index') }}"><i class="fa-solid fa-gear me-2"></i>{{ t('settings') }}</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-right-from-bracket me-2"></i>{{ t('logout') }}</a></li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            {% if session.get('user_id') %}
+            <!-- Desktop Sidebar Navigation -->
+            <div class="col-lg-2 sidebar">
+                <div class="nav flex-column">
+                    <a class="nav-link-mandal {% if request.endpoint == 'dashboard.index' %}active{% endif %}" href="{{ url_for('dashboard.index') }}">
+                        <i class="fa-solid fa-chart-line"></i> {{ t('dashboard') }}
+                    </a>
+                    <a class="nav-link-mandal {% if 'vargani' in request.endpoint %}active{% endif %}" href="{{ url_for('vargani.index') }}">
+                        <i class="fa-solid fa-hand-holding-dollar"></i> {{ t('vargani_mgmt') }}
+                    </a>
+                    <a class="nav-link-mandal {% if 'mahaprasad' in request.endpoint %}active{% endif %}" href="{{ url_for('mahaprasad.index') }}">
+                        <i class="fa-solid fa-bowl-rice"></i> {{ t('mahaprasad') }}
+                    </a>
+                    <a class="nav-link-mandal {% if 'expenses' in request.endpoint %}active{% endif %}" href="{{ url_for('expenses.index') }}">
+                        <i class="fa-solid fa-receipt"></i> {{ t('other_expenses') }}
+                    </a>
+                    <a class="nav-link-mandal {% if 'dj_procession' in request.endpoint %}active{% endif %}" href="{{ url_for('dj_procession.index') }}">
+                        <i class="fa-solid fa-music"></i> {{ t('dj_hishob') }}
+                    </a>
+                    <a class="nav-link-mandal {% if 'daily' in request.endpoint %}active{% endif %}" href="{{ url_for('daily_accounts.index') }}">
+                        <i class="fa-solid fa-calendar-day"></i> {{ t('daily_hishob') }}
+                    </a>
+                    <a class="nav-link-mandal {% if 'transactions' in request.endpoint %}active{% endif %}" href="{{ url_for('transactions.index') }}">
+                        <i class="fa-solid fa-list-check"></i> {{ t('transactions') }}
+                    </a>
+                    <a class="nav-link-mandal {% if 'pending' in request.endpoint %}active{% endif %}" href="{{ url_for('pending.index') }}">
+                        <i class="fa-solid fa-clock-rotate-left"></i> {{ t('pending_vargani') }}
+                    </a>
+                    <a class="nav-link-mandal {% if 'members' in request.endpoint %}active{% endif %}" href="{{ url_for('members.index') }}">
+                        <i class="fa-solid fa-users"></i> {{ t('members') }}
+                    </a>
+                    <a class="nav-link-mandal {% if 'reports' in request.endpoint %}active{% endif %}" href="{{ url_for('reports.index') }}">
+                        <i class="fa-solid fa-file-invoice-dollar"></i> {{ t('reports') }}
+                    </a>
+                    <a class="nav-link-mandal {% if request.endpoint == 'reports.hishob_final' %}active{% endif %}" href="{{ url_for('reports.hishob_final') }}">
+                        <i class="fa-solid fa-scale-balanced"></i> {{ t('final_hishob') }}
+                    </a>
+                    <hr class="my-2">
+                    <a class="nav-link-mandal {% if 'archive_2025.index' in request.endpoint %}active{% endif %}" href="{{ url_for('archive_2025.index') }}">
+                        <i class="fa-solid fa-box-archive"></i> {{ t('archive_2025') }}
+                    </a>
+                    <a class="nav-link-mandal {% if 'archive_2025.comparison' in request.endpoint %}active{% endif %}" href="{{ url_for('archive_2025.comparison') }}">
+                        <i class="fa-solid fa-code-compare"></i> {{ t('comparison_2025_2026') }}
+                    </a>
+                    <a class="nav-link-mandal" href="{{ url_for('public.index') }}" target="_blank">
+                        <i class="fa-solid fa-bullhorn"></i> {{ t('public_transparency') }}
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-10 p-4 main-content">
+            {% else %}
+            <div class="col-12 p-4">
+            {% endif %}
+
+                <!-- Flash Notifications -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+                            <i class="fa-solid fa-circle-info me-2"></i> {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    {% if session.get('user_id') %}
+    <!-- Mobile Bottom Navigation -->
+    <div class="mobile-bottom-nav">
+        <a href="{{ url_for('dashboard.index') }}" class="mobile-nav-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>{{ t('dashboard') }}</span>
+        </a>
+        <a href="{{ url_for('vargani.index') }}" class="mobile-nav-item {% if 'vargani' in request.endpoint %}active{% endif %}">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+            <span>वर्गणी</span>
+        </a>
+        <a href="{{ url_for('expenses.index') }}" class="mobile-nav-item {% if 'expenses' in request.endpoint %}active{% endif %}">
+            <i class="fa-solid fa-receipt"></i>
+            <span>खर्च</span>
+        </a>
+        <a href="{{ url_for('daily_accounts.index') }}" class="mobile-nav-item {% if 'daily' in request.endpoint %}active{% endif %}">
+            <i class="fa-solid fa-calendar-day"></i>
+            <span>दैनिक</span>
+        </a>
+        <a href="{{ url_for('reports.hishob_final') }}" class="mobile-nav-item {% if 'hishob_final' in request.endpoint %}active{% endif %}">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <span>हिशोब</span>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Bootstrap 5 JS Bundle & Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
