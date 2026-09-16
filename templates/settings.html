@@ -14,6 +14,34 @@
 </div>
 
 <div class="row g-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-calendar-days me-2 text-success"></i>वित्तीय वर्ष (Financial Year)</h5>
+            <div class="row g-3 align-items-end">
+                <form class="col-md-6" action="{{ url_for('settings.index') }}" method="POST">
+                    <input type="hidden" name="action" value="select_year">
+                    <label class="form-label">सक्रिय वर्ष (Active year)</label>
+                    <div class="input-group">
+                        <select name="active_year" class="form-select">
+                            {% for year in years if not year.is_archived %}
+                            <option value="{{ year.year_label }}" {% if year.year_label == active_year %}selected{% endif %}>{{ year.year_label }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-success" type="submit">निवडा</button>
+                    </div>
+                </form>
+                <form class="col-md-6" action="{{ url_for('settings.index') }}" method="POST">
+                    <input type="hidden" name="action" value="create_year">
+                    <label class="form-label">नवीन वर्ष (New year)</label>
+                    <div class="input-group">
+                        <input name="year_label" class="form-control" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="2027" required>
+                        <button class="btn btn-outline-success" type="submit">तयार करा</button>
+                    </div>
+                </form>
+            </div>
+            <small class="text-muted">नवीन वर्ष तयार केल्यावर मागील वर्षांचा डेटा बदलला किंवा हटवला जात नाही.</small>
+        </div>
+    </div>
     <!-- Mandal Info Settings -->
     <div class="col-md-6">
         <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">

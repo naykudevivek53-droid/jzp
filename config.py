@@ -22,7 +22,9 @@ class Config:
     DB_PASSWORD = os.environ.get('DB_PASSWORD')
     
     # Local fallback SQLite database path
-    DATABASE_PATH = os.path.join(BASE_DIR, 'ganesh_mandal_2026.db')
+    # In production, point this at a persistent disk/volume. Never leave the
+    # SQLite file inside an ephemeral deployment checkout.
+    DATABASE_PATH = os.environ.get('DATABASE_PATH') or os.path.join(BASE_DIR, 'ganesh_mandal_2026.db')
 
     # Uploads Configuration
     # In cloud environments with persistent volume mount, set UPLOAD_FOLDER (e.g. /app/uploads or /data/uploads)

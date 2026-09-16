@@ -1,6 +1,6 @@
 import io
 from flask import Blueprint, render_template, request, send_file, session
-from database import query_db
+from database import query_db, get_active_financial_year
 from routes.auth import login_required
 from routes.dashboard import get_financial_summary
 import openpyxl
@@ -14,12 +14,12 @@ def index():
     start_date = request.args.get('start_date', '')
     end_date = request.args.get('end_date', '')
 
-    summary = get_financial_summary('2026')
+    summary = get_financial_summary(get_active_financial_year())
 
     # Category wise breakdown
     category_summary = query_db("""
         SELECT category, SUM(amount) as total 
-        FROM expenses WHERE year_label='2026'
+        FROM expenses WHERE year_label=(SELECT value FROM settings WHERE key='active_year')
         GROUP BY category
     """)
 
@@ -28,7 +28,7 @@ def index():
         SELECT payment_method, 
                SUM(income_amount) as total_inc,
                SUM(expense_amount) as total_exp
-        FROM transactions WHERE year_label='2026'
+        FROM transactions WHERE year_label=(SELECT value FROM settings WHERE key='active_year')
         GROUP BY payment_method
     """)
 
@@ -43,14 +43,14 @@ def index():
 @reports_bp.route('/hishob-final')
 @login_required
 def hishob_final():
-    summary = get_financial_summary('2026')
-    vargani_list = query_db("SELECT * FROM vargani WHERE year_label='2026' ORDER BY id ASC")
-    mp_donation_list = query_db("SELECT * FROM mahaprasad_donations WHERE year_label='2026' ORDER BY id ASC")
-    dj_income_list = query_db("SELECT * FROM dj_accounts WHERE year_label='2026' AND type='INCOME' ORDER BY id ASC")
+    summary = get_financial_summary(get_active_financial_year())
+    vargani_list = query_db("SELECT * FROM vargani WHERE year_label=(SELECT value FROM settings WHERE key='active_year') ORDER BY id ASC")
+    mp_donation_list = query_db("SELECT * FROM mahaprasad_donations WHERE year_label=(SELECT value FROM settings WHERE key='active_year') ORDER BY id ASC")
+    dj_income_list = query_db("SELECT * FROM dj_accounts WHERE year_label=(SELECT value FROM settings WHERE key='active_year') AND type='INCOME' ORDER BY id ASC")
 
-    mp_expense_list = query_db("SELECT * FROM mahaprasad_expenses WHERE year_label='2026' ORDER BY id ASC")
-    other_expense_list = query_db("SELECT * FROM expenses WHERE year_label='2026' ORDER BY id ASC")
-    dj_expense_list = query_db("SELECT * FROM dj_accounts WHERE year_label='2026' AND type='EXPENSE' ORDER BY id ASC")
+    mp_expense_list = query_db("SELECT * FROM mahaprasad_expenses WHERE year_label=(SELECT value FROM settings WHERE key='active_year') ORDER BY id ASC")
+    other_expense_list = query_db("SELECT * FROM expenses WHERE year_label=(SELECT value FROM settings WHERE key='active_year') ORDER BY id ASC")
+    dj_expense_list = query_db("SELECT * FROM dj_accounts WHERE year_label=(SELECT value FROM settings WHERE key='active_year') AND type='EXPENSE' ORDER BY id ASC")
 
     return render_template('hishob_final.html',
                            summary=summary,
@@ -70,7 +70,7 @@ def export_excel():
     ws_summary = wb.active
     ws_summary.title = "Financial Summary"
     
-    summary = get_financial_summary('2026')
+    summary = get_financial_summary(get_active_financial_year())
     ws_summary.append(["जागृती चौक सार्वजनिक गणेश मंडळ - गणेशोत्सव २०२६"])
     ws_summary.append(["वित्तीय सारांश (Financial Summary)"])
     ws_summary.append([])
@@ -94,7 +94,7 @@ def export_excel():
     ws_tx = wb.create_sheet(title="All Transactions")
     ws_tx.append(["ID", "Date", "Type", "Module", "Category", "Description", "Income (₹)", "Expense (₹)", "Payment Method", "Reference No"])
     
-    transactions = query_db("SELECT * FROM transactions WHERE year_label='2026' ORDER BY date ASC, id ASC")
+    transactions = query_db("SELECT * FROM transactions WHERE year_label=(SELECT value FROM settings WHERE key='active_year') ORDER BY date ASC, id ASC")
     for t in transactions:
         ws_tx.append([
             t['transaction_id'],

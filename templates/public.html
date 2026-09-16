@@ -34,7 +34,7 @@
         <div class="container">
             <img src="{{ url_for('static', filename='images/ganeshji_logo.svg') }}" alt="श्री गणेश" class="mb-3" style="width: 85px; height: 85px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35));">
             <h1 class="fw-bold mb-1">{{ mandal_name }}</h1>
-            <h3 class="fw-bold text-warning mb-2">गणेशोत्सव २०२६ — सार्वजनिक पारदर्शकता व वर्गणीदार यादी</h3>
+            <h3 class="fw-bold text-warning mb-2">गणेशोत्सव {% if selected_year == 'all' %}सर्व वर्षे{% else %}{{ selected_year }}{% endif %} — सार्वजनिक पारदर्शकता व वर्गणीदार यादी</h3>
             <p class="lead mb-0">आमच्या मंडळाचा हिशोब डिजिटल, ऑटोमॅटिक व १००% पारदर्शक आहे.</p>
         </div>
     </div>
@@ -43,8 +43,28 @@
         
         <!-- Live Badge -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <span class="badge bg-success fs-6 px-3 py-2 rounded-pill"><i class="fa-solid fa-circle-dot me-1 text-white"></i> Live Real-Time Data</span>
-            <button onclick="window.print()" class="btn btn-outline-dark btn-sm rounded-pill"><i class="fa-solid fa-print me-1"></i> प्रिंट करा / PDF</button>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-success fs-6 px-3 py-2 rounded-pill"><i class="fa-solid fa-circle-dot me-1 text-white"></i> Live Real-Time Data</span>
+                <small class="text-muted">प्रशासकाने नोंद केलेला डेटा १५ सेकंदांनी आपोआप अपडेट होतो.</small>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('public.public_expenses', year=public_expense_year) }}" class="btn btn-danger btn-sm rounded-pill">
+                    <i class="fa-solid fa-receipt me-1"></i> खर्च पहा / View Expenses
+                </a>
+                <form method="get" class="d-flex gap-2">
+                    <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="all" {% if selected_year == 'all' %}selected{% endif %}>सर्व वर्षे / All Years</option>
+                        {% for year in available_years %}<option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>वर्ष {{ year }}</option>{% endfor %}
+                    </select>
+                </form>
+                <button onclick="window.print()" class="btn btn-outline-dark btn-sm rounded-pill"><i class="fa-solid fa-print me-1"></i> प्रिंट करा / PDF</button>
+            </div>
+        </div>
+        <div class="alert alert-light border d-flex flex-wrap align-items-center gap-2 mb-4">
+            <i class="fa-solid fa-link text-success"></i>
+            <strong>सार्वजनिक लिंक / Public link:</strong>
+            <input id="publicPageUrl" class="form-control form-control-sm flex-grow-1" style="min-width: 220px;" value="{{ request.url }}" readonly>
+            <button class="btn btn-sm btn-outline-success" type="button" onclick="navigator.clipboard.writeText(document.getElementById('publicPageUrl').value)">लिंक कॉपी करा</button>
         </div>
 
         <!-- Section 1: Main Financial Income Summary -->
@@ -101,6 +121,7 @@
                 <div class="stat-card-public bg-danger bg-opacity-10 border-start border-danger border-5">
                     <div class="small text-muted font-weight-bold">एकूण खर्च (TOTAL EXPENSE)</div>
                     <div class="fs-3 fw-bold text-danger">₹ {{ "{:,.2f}".format(summary.total_expenses) }}</div>
+                    <div class="small text-muted">{{ expense_count }} नोंदी / records</div>
                 </div>
             </div>
         </div>
@@ -155,6 +176,7 @@
                         <tr>
                             <th>पावती क्र.</th>
                             <th>देणगीदाराचे नाव (Donor Name)</th>
+                            <th>प्रकार / साहित्य</th>
                             <th>देणगी रक्कम (Amount)</th>
                             <th>पेमेंट पद्धत</th>
                             <th>दिनांक</th>
@@ -165,7 +187,11 @@
                         <tr>
                             <td><code>{{ d.receipt_no }}</code></td>
                             <td class="fw-bold fs-6">{{ d.donor_name }}</td>
-                            <td class="text-success fw-bold fs-6">₹ {{ "{:,.2f}".format(d.amount) }}</td>
+                            <td>
+                                <span class="badge {{ 'bg-success' if d.donation_type == 'Money' else 'bg-warning text-dark' }}">{{ 'पैशांची देणगी' if d.donation_type == 'Money' else 'साहित्य देणगी' }}</span>
+                                {% if d.donation_type == 'Items' and d.item_details %}<div class="small text-muted">{{ d.item_details }}</div>{% endif %}
+                            </td>
+                            <td class="text-success fw-bold fs-6">{% if d.amount %}₹ {{ "{:,.2f}".format(d.amount) }}{% else %}-{% endif %}</td>
                             <td><span class="badge bg-light text-dark border">{{ d.payment_method }}</span></td>
                             <td>{{ d.payment_date }}</td>
                         </tr>
@@ -176,13 +202,54 @@
         </div>
         {% endif %}
 
+        <!-- Section 6: Public Expense Details -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+            <h5 class="fw-bold text-danger mb-3"><i class="fa-solid fa-receipt me-2"></i>खर्चाचा तपशील (Expense Details)</h5>
+            <div class="d-flex justify-content-end mb-3">
+                <a href="{{ url_for('public.public_expenses', year=public_expense_year) }}" class="btn btn-outline-danger btn-sm rounded-pill">
+                    सर्व खर्च पहा / View All Expenses
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-mandal mb-0">
+                    <thead>
+                        <tr>
+                            <th>प्रवर्ग</th>
+                            <th>तपशील</th>
+                            <th>विक्रेता</th>
+                            <th>रक्कम (₹)</th>
+                            <th>दिनांक</th>
+                            <th>बिल / संदर्भ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in expense_list %}
+                        <tr>
+                            <td><span class="badge bg-danger-subtle text-danger">{{ e.category }}</span></td>
+                            <td class="fw-bold">{{ e.description }}</td>
+                            <td>{{ e.vendor or '-' }}</td>
+                            <td class="text-danger fw-bold">₹ {{ "{:,.2f}".format(e.amount) }}</td>
+                            <td>{{ e.expense_date }}</td>
+                            <td>{{ e.bill_no or '-' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="6" class="text-center text-muted py-3">या वर्षासाठी खर्च नोंदी उपलब्ध नाहीत.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Footer Notice -->
         <div class="text-center text-muted small border-top pt-4">
-            <p class="mb-1"><strong>{{ mandal_name }}</strong> — गणेशोत्सव २०२६</p>
+            <p class="mb-1"><strong>{{ mandal_name }}</strong> — गणेशोत्सव {{ selected_year }}</p>
             <p class="mb-0">सर्व वर्गणीदार व देणगीदारांचे मनापासून हार्दिक आभार! 🌸</p>
         </div>
 
     </div>
 
+<script>
+    window.setTimeout(() => window.location.reload(), 15000);
+</script>
 </body>
 </html>

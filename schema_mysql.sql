@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(150) NOT NULL,
-    role VARCHAR(50) NOT NULL DEFAULT 'member', -- admin, treasurer, member
+    role VARCHAR(50) NOT NULL DEFAULT 'admin', -- admin
     status VARCHAR(50) NOT NULL DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS members (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     mobile VARCHAR(20),
-    role VARCHAR(100) NOT NULL, -- President, Vice President, Treasurer, Secretary, Member, Volunteer
+    role VARCHAR(100) NOT NULL, -- President, Vice President, Secretary, Volunteer
     address TEXT,
     join_date DATE,
     status VARCHAR(50) NOT NULL DEFAULT 'active',
@@ -54,6 +54,10 @@ CREATE TABLE IF NOT EXISTS mahaprasad_donations (
     receipt_no VARCHAR(100) NOT NULL,
     donor_name VARCHAR(150) NOT NULL,
     mobile VARCHAR(20),
+    address TEXT,
+    purpose VARCHAR(255),
+    donation_type VARCHAR(20) NOT NULL DEFAULT 'Money',
+    item_details TEXT,
     amount DECIMAL(12,2) NOT NULL,
     payment_method VARCHAR(50) NOT NULL,
     payment_date DATE NOT NULL,
@@ -165,4 +169,24 @@ CREATE TABLE IF NOT EXISTS settings (
     `key` VARCHAR(100) PRIMARY KEY,
     `value` TEXT NOT NULL,
     description TEXT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS receipts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    year_label VARCHAR(10) NOT NULL,
+    receipt_no VARCHAR(100) NOT NULL UNIQUE,
+    source_type VARCHAR(40) NOT NULL,
+    source_id INT NOT NULL,
+    donor_name VARCHAR(150) NOT NULL,
+    mobile VARCHAR(20),
+    address TEXT,
+    amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    payment_method VARCHAR(50),
+    payment_date DATE NOT NULL,
+    details TEXT,
+    created_by VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_receipt_source (year_label, source_type, source_id),
+    INDEX idx_receipts_year_date (year_label, payment_date),
+    INDEX idx_receipts_number (receipt_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, jsonify
-from database import query_db
+from database import query_db, get_active_financial_year
 from routes.auth import login_required
 from datetime import date
 
@@ -81,14 +81,19 @@ def get_financial_summary(year='2026'):
 @dashboard_bp.route('/')
 @login_required
 def index():
-    summary = get_financial_summary('2026')
-    recent_transactions = query_db("SELECT * FROM transactions WHERE year_label='2026' ORDER BY date DESC, id DESC LIMIT 10")
-    return render_template('dashboard.html', summary=summary, recent_transactions=recent_transactions)
+    year = get_active_financial_year()
+    summary = get_financial_summary(year)
+    recent_transactions = query_db("SELECT * FROM transactions WHERE year_label=? ORDER BY date DESC, id DESC LIMIT 10", (year,))
+    receipt_count = query_db("SELECT COUNT(*) AS count FROM receipts WHERE year_label=?", (year,), one=True)
+    recent_receipts = query_db("SELECT * FROM receipts WHERE year_label=? ORDER BY id DESC LIMIT 5", (year,))
+    summary['receipt_count'] = receipt_count['count'] if receipt_count else 0
+    return render_template('dashboard.html', summary=summary, recent_transactions=recent_transactions,
+                           recent_receipts=recent_receipts)
 
 @dashboard_bp.route('/api/dashboard-charts')
 @login_required
 def dashboard_charts():
-    year = '2026'
+    year = get_active_financial_year()
     
     # 1. Expense Categories Chart
     cat_rows = query_db("""

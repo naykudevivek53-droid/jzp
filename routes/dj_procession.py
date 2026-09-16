@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from database import query_db, execute_db, log_audit
+from database import query_db, get_active_financial_year, execute_db, log_audit
+from routes.receipts import save_receipt, generate_receipt_number
 from routes.auth import login_required, role_required
 from datetime import date
 
@@ -8,11 +9,11 @@ dj_bp = Blueprint('dj_procession', __name__)
 @dj_bp.route('/dj-procession')
 @login_required
 def index():
-    incomes = query_db("SELECT * FROM dj_accounts WHERE year_label='2026' AND type='INCOME' ORDER BY date DESC, id DESC")
-    expenses = query_db("SELECT * FROM dj_accounts WHERE year_label='2026' AND type='EXPENSE' ORDER BY date DESC, id DESC")
+    incomes = query_db("SELECT * FROM dj_accounts WHERE year_label=(SELECT value FROM settings WHERE key='active_year') AND type='INCOME' ORDER BY date DESC, id DESC")
+    expenses = query_db("SELECT * FROM dj_accounts WHERE year_label=(SELECT value FROM settings WHERE key='active_year') AND type='EXPENSE' ORDER BY date DESC, id DESC")
 
-    inc_total_res = query_db("SELECT SUM(amount) as total FROM dj_accounts WHERE year_label='2026' AND type='INCOME'", one=True)
-    exp_total_res = query_db("SELECT SUM(amount) as total FROM dj_accounts WHERE year_label='2026' AND type='EXPENSE'", one=True)
+    inc_total_res = query_db("SELECT SUM(amount) as total FROM dj_accounts WHERE year_label=(SELECT value FROM settings WHERE key='active_year') AND type='INCOME'", one=True)
+    exp_total_res = query_db("SELECT SUM(amount) as total FROM dj_accounts WHERE year_label=(SELECT value FROM settings WHERE key='active_year') AND type='EXPENSE'", one=True)
 
     income_total = float(inc_total_res['total'] or 0) if inc_total_res else 0.0
     expense_total = float(exp_total_res['total'] or 0) if exp_total_res else 0.0
@@ -22,7 +23,7 @@ def index():
 
 @dj_bp.route('/dj-procession/income/add', methods=['POST'])
 @login_required
-@role_required('admin', 'treasurer')
+@role_required('admin')
 def add_income():
     receipt_no = request.form.get('receipt_no', '').strip()
     person_name = request.form.get('person_name', '').strip()
@@ -46,22 +47,28 @@ def add_income():
 
     dj_id = execute_db("""
         INSERT INTO dj_accounts (year_label, type, receipt_or_bill_no, person_or_vendor, description, amount, payment_method, date, notes, created_by)
-        VALUES ('2026', 'INCOME', ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES ((SELECT value FROM settings WHERE key='active_year'), 'INCOME', ?, ?, ?, ?, ?, ?, ?, ?)
     """, (receipt_no, person_name, description, amount, payment_method, entry_date, notes, session.get('username')))
+    receipt_no = receipt_no or generate_receipt_number(get_active_financial_year(), 'DJ_INCOME')
+    execute_db("UPDATE dj_accounts SET receipt_or_bill_no=? WHERE id=?", (receipt_no, dj_id))
 
-    tx_id = f"TX-2026-DJI{dj_id:04d}"
+    tx_id = f"TX-{get_active_financial_year()}-DJI{dj_id:04d}"
     execute_db("""
         INSERT INTO transactions (year_label, transaction_id, date, type, module, category, description, income_amount, expense_amount, payment_method, reference_no, created_by)
-        VALUES ('2026', ?, ?, 'INCOME', 'DJ_INCOME', 'DJ वर्गणी', ?, ?, 0.00, ?, ?, ?)
+        VALUES ((SELECT value FROM settings WHERE key='active_year'), ?, ?, 'INCOME', 'DJ_INCOME', 'DJ वर्गणी', ?, ?, 0.00, ?, ?, ?)
     """, (tx_id, entry_date, f"DJ वर्गणी - {person_name}", amount, payment_method, receipt_no or f"DJI-{dj_id}", session.get('username')))
 
     log_audit(session.get('user_id'), session.get('username'), 'CREATE', 'dj_accounts_income', dj_id, None, f"Amount: ₹{amount}")
+    save_receipt(get_active_financial_year(), receipt_no, 'DJ_INCOME', dj_id,
+                 person_name, request.form.get('mobile', '').strip(), None,
+                 amount, payment_method, entry_date, description or notes)
     flash('DJ / मिरवणूक वर्गणी जमा झाली.', 'success')
-    return redirect(url_for('dj_procession.index'))
+    receipt = query_db("SELECT id FROM receipts WHERE source_type='DJ_INCOME' AND source_id=?", (dj_id,), one=True)
+    return redirect(url_for('receipts.view', id=receipt['id']))
 
 @dj_bp.route('/dj-procession/expense/add', methods=['POST'])
 @login_required
-@role_required('admin', 'treasurer')
+@role_required('admin')
 def add_expense():
     bill_no = request.form.get('bill_no', '').strip()
     vendor_name = request.form.get('vendor_name', '').strip()
@@ -85,13 +92,13 @@ def add_expense():
 
     dj_id = execute_db("""
         INSERT INTO dj_accounts (year_label, type, receipt_or_bill_no, person_or_vendor, description, amount, payment_method, date, notes, created_by)
-        VALUES ('2026', 'EXPENSE', ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES ((SELECT value FROM settings WHERE key='active_year'), 'EXPENSE', ?, ?, ?, ?, ?, ?, ?, ?)
     """, (bill_no, vendor_name, description, amount, payment_method, entry_date, notes, session.get('username')))
 
-    tx_id = f"TX-2026-DJE{dj_id:04d}"
+    tx_id = f"TX-{get_active_financial_year()}-DJE{dj_id:04d}"
     execute_db("""
         INSERT INTO transactions (year_label, transaction_id, date, type, module, category, description, income_amount, expense_amount, payment_method, reference_no, created_by)
-        VALUES ('2026', ?, ?, 'EXPENSE', 'DJ_EXPENSE', 'DJ खर्च', ?, 0.00, ?, ?, ?, ?)
+        VALUES ((SELECT value FROM settings WHERE key='active_year'), ?, ?, 'EXPENSE', 'DJ_EXPENSE', 'DJ खर्च', ?, 0.00, ?, ?, ?, ?)
     """, (tx_id, entry_date, f"DJ खर्च - {vendor_name}", amount, payment_method, bill_no or f"DJE-{dj_id}", session.get('username')))
 
     log_audit(session.get('user_id'), session.get('username'), 'CREATE', 'dj_accounts_expense', dj_id, None, f"Amount: ₹{amount}")

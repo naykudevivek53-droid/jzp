@@ -332,3 +332,33 @@ body {
     .mobile-nav-item.active { color: var(--primary-saffron); font-weight: 700; }
     body { padding-bottom: 70px; }
 }
+
+@media (max-width: 575.98px) {
+    .main-content { padding: 1rem !important; }
+    .receipt-paper {
+        width: 100%;
+        margin: 0;
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    .receipt-header h3 { font-size: 1.25rem; }
+    .receipt-header h5 { font-size: 1rem; }
+    .receipt-amount-box {
+        flex-wrap: wrap;
+        gap: .5rem;
+        padding: .75rem;
+    }
+    .receipt-amount-num { font-size: 1.35rem; }
+    .receipt-paper .float-end {
+        float: none !important;
+        display: block;
+        margin-top: .35rem;
+    }
+    .receipt-paper .d-flex.justify-content-between {
+        align-items: flex-start;
+        gap: 1rem;
+        flex-direction: column;
+    }
+    .receipt-actions .btn { flex: 1 1 45%; }
+    .table-responsive { font-size: .875rem; }
+}

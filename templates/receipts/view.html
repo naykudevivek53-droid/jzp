@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="receipt-actions no-print mb-3 d-flex flex-wrap gap-2"><a class="btn btn-outline-secondary" href="{{ url_for('receipts.index') }}">मागे</a><button class="btn btn-primary" onclick="window.print()">प्रिंट</button><a class="btn btn-outline-primary" href="{{ url_for('receipts.pdf', id=record.id) }}">PDF</a>{% if record.mobile %}<a class="btn btn-success" target="_blank" rel="noopener" href="{{ url_for('receipts.whatsapp', id=record.id) }}">WhatsApp वर पाठवा</a>{% endif %}</div>
+<div class="receipt-paper"><div class="receipt-header"><img src="{{ url_for('static', filename='images/ganeshji_logo.svg') }}" style="width:70px"><h3>{{ mandal_name }}</h3><h5>गणेशोत्सव {{ record.year_label }}</h5><div>अधिकृत डिजिटल पावती</div><div class="receipt-badge">{{ record.receipt_no }}</div></div>
+<p><strong>नाव / Name:</strong> {{ record.donor_name }} <span class="float-end"><strong>दिनांक / Date:</strong> {{ record.payment_date }}</span></p>
+{% if masked_mobile %}<p><strong>मोबाईल:</strong> {{ masked_mobile }}</p>{% endif %}
+<div class="receipt-amount-box"><span>जमा रक्कम / Amount</span><strong class="receipt-amount-num">₹ {{ "%.2f"|format(record.amount) }}</strong><span class="badge bg-success">{{ record.payment_method }}</span></div>
+<p><strong>अक्षरी:</strong> {{ words_mr }}</p><p><strong>Amount in words:</strong> {{ words_en }}</p>{% if record.details %}<p><strong>वर्गणी / देणगी प्रकार:</strong> {{ record.details }}</p>{% endif %}
+{% if contact %}<p><strong>संपर्क:</strong> {{ contact.value }}</p>{% endif %}
+<div class="d-flex justify-content-between mt-5"><span>आपल्या सहकार्याबद्दल धन्यवाद! 🙏</span><span class="text-center">अधिकृत स्वाक्षरी<br>________________</span></div>
+</div>
+{% endblock %}

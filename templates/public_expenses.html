@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ t('public_expenses') }} - {{ mandal_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <style>
+        .expense-card { border-left: 4px solid #dc3545; }
+        @media (max-width: 575.98px) {
+            .desktop-expenses { display: none; }
+            .expense-card { display: block; }
+        }
+        @media (min-width: 576px) {
+            .mobile-expenses { display: none; }
+        }
+    </style>
+</head>
+<body class="bg-light">
+<header class="bg-danger text-white py-4 mb-4">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h1 class="h3 mb-1">{{ mandal_name }}</h1>
+                <div>{{ t('public_expenses') }} — {{ t('year') }} {{ selected_year }}</div>
+            </div>
+            <a class="btn btn-light btn-sm" href="{{ url_for('public.index', year=selected_year) }}">← {{ t('public_transparency') }}</a>
+        </div>
+    </div>
+</header>
+<main class="container pb-5">
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted small">{{ t('total_expense_records') }}</div><div class="fs-3 fw-bold">{{ total_count }}</div></div></div></div>
+        <div class="col-6 col-md-4"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted small">{{ t('total_expense_amount') }}</div><div class="fs-3 fw-bold text-danger">₹ {{ "{:,.2f}".format(total_amount) }}</div></div></div></div>
+        <div class="col-md-4"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted small">{{ t('year') }}</div><div class="fs-3 fw-bold">{{ selected_year }}</div></div></div></div>
+    </div>
+
+    <form method="get" class="card shadow-sm p-3 mb-4">
+        <input type="hidden" name="year" value="{{ selected_year }}">
+        <div class="row g-2">
+            <div class="col-6 col-md-2"><label class="form-label small">{{ t('date_from') }}</label><input type="date" name="date_from" value="{{ request.args.get('date_from', '') }}" class="form-control"></div>
+            <div class="col-6 col-md-2"><label class="form-label small">{{ t('date_to') }}</label><input type="date" name="date_to" value="{{ request.args.get('date_to', '') }}" class="form-control"></div>
+            <div class="col-md-2"><label class="form-label small">{{ t('category') }}</label><select name="category" class="form-select"><option value="">{{ t('all') }}</option>{% for row in categories %}<option value="{{ row.category }}" {% if request.args.get('category') == row.category %}selected{% endif %}>{{ row.category }}</option>{% endfor %}</select></div>
+            <div class="col-md-2"><label class="form-label small">{{ t('payment_method') }}</label><select name="payment_method" class="form-select"><option value="">{{ t('all') }}</option>{% for row in payment_methods %}<option value="{{ row.payment_method }}" {% if request.args.get('payment_method') == row.payment_method %}selected{% endif %}>{{ row.payment_method }}</option>{% endfor %}</select></div>
+            <div class="col-md-3"><label class="form-label small">{{ t('search') }}</label><input type="search" name="search" value="{{ request.args.get('search', '') }}" class="form-control" placeholder="{{ t('search_expenses') }}"></div>
+            <div class="col-md-1 d-flex align-items-end"><button class="btn btn-danger w-100" type="submit">{{ t('filter') }}</button></div>
+        </div>
+        <div class="mt-2"><a href="{{ url_for('public.public_expenses', year=selected_year) }}" class="btn btn-sm btn-outline-secondary">{{ t('clear_filters') }}</a></div>
+    </form>
+
+    <div class="desktop-expenses table-responsive bg-white shadow-sm rounded">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-danger"><tr><th>ID / Voucher</th><th>{{ t('date') }}</th><th>{{ t('category') }}</th><th>{{ t('description') }}</th><th>{{ t('amount') }}</th><th>{{ t('payment_method') }}</th><th>{{ t('vendor') }}</th><th></th></tr></thead>
+            <tbody>
+            {% for expense in expenses %}
+                <tr>
+                    <td><a href="{{ url_for('public.public_expense_detail', expense_id=expense.id, source=expense.source, year=selected_year) }}">#{{ expense.id }}{% if expense.bill_no %}<br><small>{{ expense.bill_no }}</small>{% endif %}</a></td>
+                    <td>{{ expense.expense_date }}</td><td>{{ expense.category }}</td><td>{{ expense.description }}</td>
+                    <td class="fw-bold text-danger">₹ {{ "{:,.2f}".format(expense.amount) }}</td><td>{{ expense.payment_method }}</td><td>{{ expense.vendor or '-' }}</td>
+                    <td><a class="btn btn-sm btn-outline-danger" href="{{ url_for('public.public_expense_detail', expense_id=expense.id, source=expense.source, year=selected_year) }}">View</a></td>
+                </tr>
+            {% else %}<tr><td colspan="8" class="text-center py-4 text-muted">{{ t('no_expenses_found') }}</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mobile-expenses">
+    {% for expense in expenses %}
+        <article class="card expense-card shadow-sm mb-3"><div class="card-body">
+            <div class="d-flex justify-content-between"><strong>{{ expense.category }}</strong><span class="text-danger fw-bold">₹ {{ "{:,.2f}".format(expense.amount) }}</span></div>
+            <div class="small text-muted mt-1">{{ expense.expense_date }} · #{{ expense.id }}{% if expense.bill_no %} · {{ expense.bill_no }}{% endif %}</div>
+            <div class="mt-2">{{ expense.description }}</div>
+            <div class="small mt-2">{{ expense.payment_method }}{% if expense.vendor %} · {{ expense.vendor }}{% endif %}</div>
+            <a class="btn btn-sm btn-outline-danger mt-3" href="{{ url_for('public.public_expense_detail', expense_id=expense.id, source=expense.source, year=selected_year) }}">View details</a>
+        </div></article>
+    {% else %}<div class="alert alert-light text-center">{{ t('no_expenses_found') }}</div>{% endfor %}
+    </div>
+
+    <nav class="mt-4" aria-label="Expense pages"><ul class="pagination justify-content-center">
+        {% if page > 1 %}<li class="page-item"><a class="page-link" href="{{ url_for('public.public_expenses', page=page-1, **filters) }}">{{ t('previous') }}</a></li>{% endif %}
+        <li class="page-item disabled"><span class="page-link">{{ page }} / {{ total_pages }}</span></li>
+        {% if page < total_pages %}<li class="page-item"><a class="page-link" href="{{ url_for('public.public_expenses', page=page+1, **filters) }}">{{ t('next') }}</a></li>{% endif %}
+    </ul></nav>
+</main>
+</body>
+</html>

@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_from_directory
 from werkzeug.utils import secure_filename
-from database import query_db, execute_db, log_audit
+from database import query_db, get_active_financial_year, execute_db, log_audit
 from routes.auth import login_required, role_required
 from config import Config
 from datetime import date
@@ -38,7 +38,7 @@ def allowed_file(filename):
 def index():
     category_filter = request.args.get('category', '').strip()
     
-    sql = "SELECT * FROM expenses WHERE year_label='2026'"
+    sql = "SELECT * FROM expenses WHERE year_label=(SELECT value FROM settings WHERE key='active_year')"
     params = []
     
     if category_filter:
@@ -48,14 +48,14 @@ def index():
     sql += " ORDER BY expense_date DESC, id DESC"
     records = query_db(sql, params)
 
-    total_res = query_db("SELECT SUM(amount) as total FROM expenses WHERE year_label='2026'", one=True)
+    total_res = query_db("SELECT SUM(amount) as total FROM expenses WHERE year_label=(SELECT value FROM settings WHERE key='active_year')", one=True)
     total_amount = float(total_res['total'] or 0) if total_res else 0.0
 
     return render_template('expenses/index.html', records=records, total_amount=total_amount, categories=EXPENSE_CATEGORIES, category_filter=category_filter)
 
 @expenses_bp.route('/expenses/add', methods=['POST'])
 @login_required
-@role_required('admin', 'treasurer')
+@role_required('admin')
 def add():
     category = request.form.get('category', 'Other')
     description = request.form.get('description', '').strip()
@@ -92,13 +92,13 @@ def add():
 
     exp_id = execute_db("""
         INSERT INTO expenses (year_label, category, description, vendor, amount, payment_method, expense_date, bill_no, bill_file, approved_by, notes, created_by)
-        VALUES ('2026', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES ((SELECT value FROM settings WHERE key='active_year'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (category, description, vendor, amount, payment_method, expense_date, bill_no, bill_filename, approved_by, notes, session.get('username')))
 
-    tx_id = f"TX-2026-EXP{exp_id:04d}"
+    tx_id = f"TX-{get_active_financial_year()}-EXP{exp_id:04d}"
     execute_db("""
         INSERT INTO transactions (year_label, transaction_id, date, type, module, category, description, income_amount, expense_amount, payment_method, reference_no, created_by)
-        VALUES ('2026', ?, ?, 'EXPENSE', 'OTHER_EXPENSE', ?, ?, 0.00, ?, ?, ?, ?)
+        VALUES ((SELECT value FROM settings WHERE key='active_year'), ?, ?, 'EXPENSE', 'OTHER_EXPENSE', ?, ?, 0.00, ?, ?, ?, ?)
     """, (tx_id, expense_date, category, description, amount, payment_method, bill_no or f"EXP-{exp_id}", session.get('username')))
 
     log_audit(session.get('user_id'), session.get('username'), 'CREATE', 'expenses', exp_id, None, f"Category: {category}, Amount: ₹{amount}")

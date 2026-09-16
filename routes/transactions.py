@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, session, make_response
-from database import query_db
+from database import query_db, get_active_financial_year
 from routes.auth import login_required
 
 transactions_bp = Blueprint('transactions', __name__)
@@ -14,7 +14,7 @@ def index():
     end_date = request.args.get('end_date', '').strip()
     search = request.args.get('q', '').strip()
 
-    sql = "SELECT * FROM transactions WHERE year_label='2026'"
+    sql = "SELECT * FROM transactions WHERE year_label=(SELECT value FROM settings WHERE key='active_year')"
     params = []
 
     if type_filter:

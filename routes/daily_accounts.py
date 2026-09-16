@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, session
-from database import query_db
+from database import query_db, get_active_financial_year
 from routes.auth import login_required
 from datetime import date, datetime, timedelta
 
@@ -9,7 +9,7 @@ daily_bp = Blueprint('daily_accounts', __name__)
 @login_required
 def index():
     selected_date_str = request.args.get('date', date.today().isoformat())
-    year = '2026'
+    year = get_active_financial_year()
 
     # Compute overall opening balance (transactions before selected_date)
     prior_income = float(query_db("SELECT SUM(income_amount) as total FROM transactions WHERE year_label=? AND date < ?", (year, selected_date_str), one=True)['total'] or 0)

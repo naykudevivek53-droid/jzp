@@ -36,6 +36,7 @@
                 {% endif %}
 
                 {% if session.get('user_id') %}
+                <span class="badge bg-light text-dark">FY {{ active_financial_year }}</span>
                 <div class="dropdown">
                     <button class="btn btn-outline-light dropdown-toggle rounded-pill px-3 py-1 font-weight-bold" type="button" data-bs-toggle="dropdown">
                         <i class="fa-solid fa-circle-user me-1 text-warning"></i> {{ current_user_name }} ({{ current_user_role }})
@@ -65,6 +66,9 @@
                     </a>
                     <a class="nav-link-mandal {% if 'mahaprasad' in request.endpoint %}active{% endif %}" href="{{ url_for('mahaprasad.index') }}">
                         <i class="fa-solid fa-bowl-rice"></i> {{ t('mahaprasad') }}
+                    </a>
+                    <a class="nav-link-mandal {% if 'receipts' in request.endpoint %}active{% endif %}" href="{{ url_for('receipts.index') }}">
+                        <i class="fa-solid fa-file-invoice"></i> {{ t('receipts') }}
                     </a>
                     <a class="nav-link-mandal {% if 'expenses' in request.endpoint %}active{% endif %}" href="{{ url_for('expenses.index') }}">
                         <i class="fa-solid fa-receipt"></i> {{ t('other_expenses') }}

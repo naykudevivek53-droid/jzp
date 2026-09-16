@@ -8,16 +8,14 @@ members_bp = Blueprint('members', __name__)
 MANDAL_ROLES = [
     ('President', 'अध्यक्ष (President)'),
     ('Vice President', 'उपाध्यक्ष (Vice President)'),
-    ('Treasurer', 'खजिनदार (Treasurer)'),
     ('Secretary', 'सचिव / कार्यवाह (Secretary)'),
-    ('Member', 'सदस्य (Member)'),
     ('Volunteer', 'कार्यकर्ता (Volunteer)')
 ]
 
 @members_bp.route('/members')
 @login_required
 def index():
-    members = query_db("SELECT * FROM members ORDER BY id ASC")
+    members = query_db("SELECT * FROM members WHERE role NOT IN ('Treasurer', 'Member') ORDER BY id ASC")
     return render_template('members.html', members=members, roles=MANDAL_ROLES)
 
 @members_bp.route('/members/add', methods=['POST'])

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from database import query_db, execute_db, log_audit
+from database import query_db, get_active_financial_year, execute_db, log_audit
 from routes.auth import login_required, role_required
 
 pending_bp = Blueprint('pending', __name__)
@@ -7,14 +7,14 @@ pending_bp = Blueprint('pending', __name__)
 @pending_bp.route('/pending-vargani')
 @login_required
 def index():
-    records = query_db("SELECT * FROM pending_vargani WHERE year_label='2026' ORDER BY due_date ASC, id DESC")
+    records = query_db("SELECT * FROM pending_vargani WHERE year_label=(SELECT value FROM settings WHERE key='active_year') ORDER BY due_date ASC, id DESC")
     
     totals_res = query_db("""
         SELECT 
             SUM(expected_amount) as total_expected,
             SUM(paid_amount) as total_paid,
             SUM(remaining_amount) as total_remaining
-        FROM pending_vargani WHERE year_label='2026'
+        FROM pending_vargani WHERE year_label=(SELECT value FROM settings WHERE key='active_year')
     """, one=True)
 
     summary = {
@@ -27,7 +27,7 @@ def index():
 
 @pending_bp.route('/pending-vargani/add', methods=['POST'])
 @login_required
-@role_required('admin', 'treasurer')
+@role_required('admin')
 def add():
     person_name = request.form.get('person_name', '').strip()
     mobile = request.form.get('mobile', '').strip()
@@ -54,7 +54,7 @@ def add():
 
     p_id = execute_db("""
         INSERT INTO pending_vargani (year_label, person_name, mobile, expected_amount, paid_amount, remaining_amount, due_date, status, notes)
-        VALUES ('2026', ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES ((SELECT value FROM settings WHERE key='active_year'), ?, ?, ?, ?, ?, ?, ?, ?)
     """, (person_name, mobile, expected, paid, remaining, due_date, status, notes))
 
     log_audit(session.get('user_id'), session.get('username'), 'CREATE', 'pending_vargani', p_id, None, f"Remaining: ₹{remaining}")
@@ -63,7 +63,7 @@ def add():
 
 @pending_bp.route('/pending-vargani/update/<int:id>', methods=['POST'])
 @login_required
-@role_required('admin', 'treasurer')
+@role_required('admin')
 def update(id):
     add_paid_str = request.form.get('add_paid', '0').strip()
     record = query_db("SELECT * FROM pending_vargani WHERE id = ?", (id,), one=True)

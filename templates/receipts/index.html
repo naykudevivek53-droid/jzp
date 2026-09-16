@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4><i class="fa-solid fa-receipt me-2"></i>{{ t('receipts') }}</h4>
+</div>
+<form class="row g-2 mb-3">
+  <div class="col-md-4"><input class="form-control" name="q" value="{{ q }}" placeholder="{{ t('search') }}"></div>
+  <div class="col-md-3"><select class="form-select" name="source_type"><option value="">सर्व</option><option value="VARGANI" {% if source_type=='VARGANI' %}selected{% endif %}>वर्गणी</option><option value="MAHAPRASAD" {% if source_type=='MAHAPRASAD' %}selected{% endif %}>महाप्रसाद</option></select></div>
+  <div class="col-md-2"><select class="form-select" name="year">{% for y in years %}<option value="{{ y.year_label }}" {% if selected_year==y.year_label %}selected{% endif %}>{{ y.year_label }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><input type="date" class="form-control" name="date_from" value="{{ date_from }}" aria-label="From date"></div>
+  <div class="col-md-2"><input type="date" class="form-control" name="date_to" value="{{ date_to }}" aria-label="To date"></div>
+  <div class="col-12 col-md-2"><button class="btn btn-primary w-100">{{ t('filter') }}</button></div>
+</form>
+<div class="table-responsive"><table class="table table-striped"><thead><tr><th>पावती क्र.</th><th>नाव</th><th>प्रकार</th><th>दिनांक</th><th>रक्कम</th><th></th></tr></thead>
+<tbody>{% for r in receipts %}<tr><td>{{ r.receipt_no }}</td><td>{{ r.donor_name }}</td><td>{{ r.source_type }}</td><td>{{ r.payment_date }}</td><td>₹ {{ "%.2f"|format(r.amount) }}</td><td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('receipts.view', id=r.id) }}">पहा</a> <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('receipts.pdf', id=r.id) }}">PDF</a></td></tr>{% else %}<tr><td colspan="6">पावत्या उपलब्ध नाहीत.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

@@ -13,6 +13,7 @@ except ImportError:
     HAS_PYMYSQL = False
 
 import sqlite3
+from datetime import date
 
 def is_mysql_configured():
     if Config.DATABASE_URL:
@@ -113,6 +114,64 @@ def init_db():
         conn.commit()
         conn.close()
 
+def ensure_schema_compatibility():
+    """Apply additive migrations needed by running installations."""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    use_mysql = is_mysql_configured()
+
+    if use_mysql:
+        cur.execute("""CREATE TABLE IF NOT EXISTS receipts (
+            id INT AUTO_INCREMENT PRIMARY KEY, year_label VARCHAR(10) NOT NULL,
+            receipt_no VARCHAR(100) NOT NULL UNIQUE, source_type VARCHAR(40) NOT NULL,
+            source_id INT NOT NULL, donor_name VARCHAR(150) NOT NULL, mobile VARCHAR(20),
+            address TEXT, amount DECIMAL(12,2) NOT NULL DEFAULT 0, payment_method VARCHAR(50),
+            payment_date DATE NOT NULL, details TEXT, created_by VARCHAR(100),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_receipt_source (year_label, source_type, source_id),
+            INDEX idx_receipts_year_date (year_label, payment_date)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4""")
+        cur.execute("SHOW COLUMNS FROM mahaprasad_donations LIKE 'donation_type'")
+        if not cur.fetchone():
+            cur.execute("ALTER TABLE mahaprasad_donations ADD COLUMN donation_type VARCHAR(20) NOT NULL DEFAULT 'Money'")
+        cur.execute("SHOW COLUMNS FROM mahaprasad_donations LIKE 'item_details'")
+        if not cur.fetchone():
+            cur.execute("ALTER TABLE mahaprasad_donations ADD COLUMN item_details TEXT")
+        cur.execute("SHOW COLUMNS FROM mahaprasad_donations LIKE 'address'")
+        if not cur.fetchone():
+            cur.execute("ALTER TABLE mahaprasad_donations ADD COLUMN address TEXT")
+        cur.execute("SHOW COLUMNS FROM mahaprasad_donations LIKE 'purpose'")
+        if not cur.fetchone():
+            cur.execute("ALTER TABLE mahaprasad_donations ADD COLUMN purpose VARCHAR(255)")
+        cur.execute("INSERT IGNORE INTO financial_years (year_label, is_archived) VALUES ('2026', 0)")
+        cur.execute("INSERT IGNORE INTO settings (`key`, value, description) VALUES ('active_year', '2026', 'Currently selected financial year')")
+        cur.execute("DELETE FROM users WHERE role IN ('treasurer', 'member')")
+        cur.execute("DELETE FROM members WHERE role IN ('Treasurer', 'Member')")
+        conn.close()
+        return
+
+    cur.execute("PRAGMA table_info(mahaprasad_donations)")
+    columns = {row[1] for row in cur.fetchall()}
+    if 'donation_type' not in columns:
+        cur.execute("ALTER TABLE mahaprasad_donations ADD COLUMN donation_type TEXT NOT NULL DEFAULT 'Money'")
+    if 'item_details' not in columns:
+        cur.execute("ALTER TABLE mahaprasad_donations ADD COLUMN item_details TEXT")
+    if 'address' not in columns:
+        cur.execute("ALTER TABLE mahaprasad_donations ADD COLUMN address TEXT")
+    if 'purpose' not in columns:
+        cur.execute("ALTER TABLE mahaprasad_donations ADD COLUMN purpose TEXT")
+    cur.execute("""CREATE TABLE IF NOT EXISTS receipts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, year_label TEXT NOT NULL,
+        receipt_no TEXT NOT NULL UNIQUE, source_type TEXT NOT NULL, source_id INTEGER NOT NULL,
+        donor_name TEXT NOT NULL, mobile TEXT, address TEXT, amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+        payment_method TEXT, payment_date DATE NOT NULL, details TEXT, created_by TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE(year_label, source_type, source_id))""")
+    cur.execute("INSERT OR IGNORE INTO financial_years (year_label, is_archived) VALUES ('2026', 0)")
+    cur.execute("INSERT OR IGNORE INTO settings (key, value, description) VALUES ('active_year', '2026', 'Currently selected financial year')")
+    cur.execute("DELETE FROM users WHERE role IN ('treasurer', 'member')")
+    cur.execute("DELETE FROM members WHERE role IN ('Treasurer', 'Member')")
+    conn.commit()
+    conn.close()
+
 def query_db(query, args=(), one=False):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -134,6 +193,34 @@ def query_db(query, args=(), one=False):
         if one:
             return dict(rv[0]) if rv else None
         return [dict(row) for row in rv]
+
+def get_active_financial_year():
+    """Return the configured financial year, falling back safely to the newest year."""
+    try:
+        configured = query_db("SELECT value FROM settings WHERE key='active_year'", one=True)
+        if configured and configured.get('value'):
+            year = str(configured['value']).strip()
+            if query_db("SELECT id FROM financial_years WHERE year_label=? AND is_archived=0", (year,), one=True):
+                return year
+        current = query_db(
+            "SELECT year_label FROM financial_years WHERE is_archived=0 "
+            "ORDER BY year_label DESC, id DESC", one=True)
+        if current:
+            return str(current['year_label'])
+    except Exception:
+        pass
+    return str(date.today().year)
+
+def set_active_financial_year(year_label):
+    """Select an existing, non-archived financial year without changing its data."""
+    year_label = str(year_label).strip()
+    if not year_label.isdigit() or len(year_label) != 4:
+        raise ValueError("Financial year must be a four digit year")
+    if not query_db("SELECT id FROM financial_years WHERE year_label=? AND is_archived=0", (year_label,), one=True):
+        raise ValueError("Financial year does not exist or is archived")
+    execute_db("INSERT OR REPLACE INTO settings (key, value, description) VALUES (?, ?, ?)",
+               ('active_year', year_label, 'Currently selected financial year'))
+    return year_label
 
 def execute_db(query, args=()):
     conn = get_db_connection()

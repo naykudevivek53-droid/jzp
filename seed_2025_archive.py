@@ -4,6 +4,15 @@ from database import init_db, get_db_connection, is_mysql_configured
 
 def seed_database():
     init_db()
+    if (
+        os.environ.get('FLASK_ENV', '').lower() == 'production'
+        and os.environ.get('ALLOW_DESTRUCTIVE_SEED', '').lower() not in ('1', 'true', 'yes')
+    ):
+        raise RuntimeError(
+            "Refusing destructive production seed. Set ALLOW_DESTRUCTIVE_SEED=true "
+            "only for an intentional first-time initialization."
+        )
+
     conn = get_db_connection()
     cur = conn.cursor()
     use_mysql = is_mysql_configured()
@@ -39,8 +48,6 @@ def seed_database():
     print("Seeding Users...")
     users = [
         ('admin', generate_password_hash('admin123'), 'अध्यक्ष / ॲडमिन', 'admin'),
-        ('treasurer', generate_password_hash('treasurer123'), 'रामचंद्र पाटील (खजिनदार)', 'treasurer'),
-        ('member', generate_password_hash('member123'), 'गणेश गायकवाड (सदस्य)', 'member')
     ]
     executemany_query("INSERT INTO users (username, password_hash, full_name, role) VALUES (?, ?, ?, ?)", users)
 
@@ -48,9 +55,7 @@ def seed_database():
     members = [
         ('आनंदराव देशपांडे', '9822011223', 'President', 'जागृती चौक, सांगली', '2020-01-01', 'active'),
         ('विजय शिंदे', '9822022334', 'Vice President', 'जागृती चौक, सांगली', '2020-01-01', 'active'),
-        ('रामचंद्र पाटील', '9822033445', 'Treasurer', 'जागृती चौक, सांगली', '2021-06-01', 'active'),
         ('प्रकाश कदम', '9822044556', 'Secretary', 'जागृती चौक, सांगली', '2021-06-01', 'active'),
-        ('गणेश गायकवाड', '9822055667', 'Member', 'जागृती चौक, सांगली', '2022-08-01', 'active'),
         ('सचिन मोरे', '9822066778', 'Volunteer', 'जागृती चौक, सांगली', '2024-08-01', 'active')
     ]
     executemany_query("INSERT INTO members (name, mobile, role, address, join_date, status) VALUES (?, ?, ?, ?, ?, ?)", members)

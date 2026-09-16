@@ -30,6 +30,7 @@ A modern, production-ready Ganesh Mandal Accounting & Management application bui
 11. **Reports & Exports**: Complete financial summary, category breakdowns, payment method statistics, and Excel (`.xlsx`) export.
 12. **Public Transparency Page**: Public board showing aggregate summary numbers and names of contributing persons safely without exposing private phone numbers or addresses.
 13. **Audit Trail & Database Backup**: Logs all creations, modifications, and deletions. Allows full database backup export.
+14. **Year-wise accounting**: Admins can create and select a new active financial year from Settings. Previous years remain read-only in their own records and are never deleted when switching years.
 
 ---
 
@@ -60,7 +61,7 @@ You can use a managed cloud MySQL database (e.g., from [Railway](https://railway
 2. Note down the credentials:
    - `DATABASE_URL` (e.g., `mysql://user:password@host:3306/dbname`) OR
    - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
-3. The application will automatically execute the schema and seed the initial users and 2025 archive on its first connection!
+3. Use the same managed database and database name on every redeploy. The application only attempts initialization when the database has no `users` table; it does not reseed an existing database. For an intentional first production initialization only, set `ALLOW_DESTRUCTIVE_SEED=true`, deploy once, then remove it or set it to `false`.
    *(Alternatively, you can manually import `schema_mysql.sql` using phpMyAdmin, MySQL Workbench, or the CLI).*
 
 ---
@@ -80,6 +81,7 @@ You can use a managed cloud MySQL database (e.g., from [Railway](https://railway
    - `FLASK_ENV`: `production`
    - `FLASK_DEBUG`: `False`
    - *(Optional persistent disk mount for uploads)*: `UPLOAD_FOLDER`: `/var/data/uploads`
+   - Keep `DATABASE_URL` connected to the same managed MySQL database on every deploy.
 5. Click **Deploy Web Service**.
 
 #### On Railway.app:
@@ -110,6 +112,20 @@ Once deployed, open your live public URL (e.g. `https://ganesh-mandal-2026.onren
   `https://<YOUR-LIVE-DOMAIN>/public-transparency`
 
 ---
+
+## 🔐 Redeploy and data safety
+
+Redeploying the application code does not delete records when the application keeps using the same database:
+
+- **Recommended production setup:** use managed MySQL and keep the same `DATABASE_URL`. Database records remain outside the web-service container.
+- **Production SQLite:** attach a persistent volume and set `DATABASE_PATH` to a file on that volume, such as `/var/data/ganesh_mandal_2026.db`. Do not store the database inside the deployed repository or temporary container filesystem.
+- Download the admin database backup from **Settings → Database Backup** before deployments, migrations, or provider changes.
+- Keep `SECRET_KEY` unchanged across redeployments so existing login sessions and signed values remain valid.
+- Keep `UPLOAD_FOLDER` on persistent storage as well if uploaded bills or receipt files must survive redeploys.
+
+The startup path refuses to seed an existing empty SQLite file, and production seeding is disabled unless `ALLOW_DESTRUCTIVE_SEED=true` is explicitly set. These safeguards prevent an accidental redeploy from overwriting a restored or partially mounted database. Never run `seed_2025_archive.py` against an existing production database; it is a destructive initializer.
+
+If a provider recreates its storage without a persistent volume or managed database, no application code can recover the lost local SQLite file. Restore the latest backup or reconnect the original persistent database before starting the new deployment.
 
 ## 🗄️ File Uploads & Cloud Storage Note
 

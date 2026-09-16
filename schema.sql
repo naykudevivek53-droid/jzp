@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     full_name TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'member', -- admin, treasurer, member
+    role TEXT NOT NULL DEFAULT 'admin', -- admin
     status TEXT NOT NULL DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS members (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     mobile TEXT,
-    role TEXT NOT NULL, -- President, Vice President, Treasurer, Secretary, Member, Volunteer
+    role TEXT NOT NULL, -- President, Vice President, Secretary, Volunteer
     address TEXT,
     join_date DATE,
     status TEXT NOT NULL DEFAULT 'active',
@@ -51,6 +51,10 @@ CREATE TABLE IF NOT EXISTS mahaprasad_donations (
     receipt_no TEXT NOT NULL,
     donor_name TEXT NOT NULL,
     mobile TEXT,
+    address TEXT,
+    purpose TEXT,
+    donation_type TEXT NOT NULL DEFAULT 'Money',
+    item_details TEXT,
     amount DECIMAL(12,2) NOT NULL,
     payment_method TEXT NOT NULL,
     payment_date DATE NOT NULL,
@@ -154,4 +158,22 @@ CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL,
     description TEXT
+);
+
+CREATE TABLE IF NOT EXISTS receipts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    year_label TEXT NOT NULL,
+    receipt_no TEXT NOT NULL UNIQUE,
+    source_type TEXT NOT NULL,
+    source_id INTEGER NOT NULL,
+    donor_name TEXT NOT NULL,
+    mobile TEXT,
+    address TEXT,
+    amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    payment_method TEXT,
+    payment_date DATE NOT NULL,
+    details TEXT,
+    created_by TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(year_label, source_type, source_id)
 );

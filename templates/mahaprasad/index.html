@@ -46,6 +46,7 @@
                         <tr>
                             <th>पावती क्र.</th>
                             <th>देणगीदाराचे नाव</th>
+                            <th>प्रकार / साहित्य</th>
                             <th>रक्कम (₹)</th>
                             <th>पद्धत</th>
                             <th>दिनांक</th>
@@ -56,12 +57,18 @@
                         <tr>
                             <td><code>{{ d.receipt_no }}</code></td>
                             <td class="fw-bold">{{ d.donor_name }}</td>
-                            <td class="text-success fw-bold">₹{{ "{:,.2f}".format(d.amount) }}</td>
+                            <td>
+                                <span class="badge {{ 'bg-success' if d.donation_type == 'Money' else 'bg-warning text-dark' }}">
+                                    {{ 'पैशांची देणगी' if d.donation_type == 'Money' else 'साहित्य देणगी' }}
+                                </span>
+                                {% if d.donation_type == 'Items' and d.item_details %}<div class="small text-muted">{{ d.item_details }}</div>{% endif %}
+                            </td>
+                            <td class="text-success fw-bold">{% if d.amount %}₹{{ "{:,.2f}".format(d.amount) }}{% else %}-{% endif %}</td>
                             <td><span class="badge bg-light text-dark border">{{ d.payment_method }}</span></td>
                             <td>{{ d.payment_date }}</td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="5" class="text-center text-muted py-3">देणगी नोंद उपलब्ध नाही.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-3">देणगी नोंद उपलब्ध नाही.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -123,12 +130,37 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">मोबाईल नंबर</label>
+                            <input type="tel" name="mobile" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">पत्ता</label>
+                            <input type="text" name="address" class="form-control">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">देणगीचा उद्देश / प्रवर्ग</label>
+                        <input type="text" name="purpose" class="form-control" placeholder="उदा. महाप्रसाद, पूजासाहित्य">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">देणगीचा प्रकार *</label>
+                        <select name="donation_type" id="donationType" class="form-select" required>
+                            <option value="Money">पैशांची देणगी</option>
+                            <option value="Items">महाप्रसाद साहित्य देणगी</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 d-none" id="itemDetailsField">
+                        <label class="form-label font-weight-bold">साहित्याचा तपशील *</label>
+                        <input type="text" name="item_details" class="form-control" placeholder="उदा. तांदूळ २५ किलो, डाळ १० किलो">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label font-weight-bold">मोबाईल</label>
                             <input type="tel" name="mobile" class="form-control">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-bold">रक्कम (₹) *</label>
-                            <input type="number" step="0.01" name="amount" class="form-control" required>
+                            <label class="form-label font-weight-bold">रक्कम (₹) <span id="amountRequired">*</span></label>
+                            <input type="number" step="0.01" min="0" name="amount" class="form-control" required>
                         </div>
                     </div>
                     <div class="row">
@@ -201,5 +233,20 @@
             </form>
         </div>
     </div>
-</div>
+{% block scripts %}
+<script>
+    const donationType = document.getElementById('donationType');
+    const itemDetailsField = document.getElementById('itemDetailsField');
+    const itemDetails = itemDetailsField.querySelector('input');
+    const amount = document.querySelector('input[name="amount"]');
+    const amountRequired = document.getElementById('amountRequired');
+    donationType.addEventListener('change', () => {
+        const isItems = donationType.value === 'Items';
+        itemDetailsField.classList.toggle('d-none', !isItems);
+        itemDetails.required = isItems;
+        amount.required = !isItems;
+        amountRequired.textContent = isItems ? '' : '*';
+    });
+</script>
+{% endblock %}
 {% endblock %}

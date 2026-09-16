@@ -1,7 +1,7 @@
 import os
 from flask import Flask, session, g, render_template
 from config import Config
-from database import init_db, query_db, is_mysql_configured
+from database import init_db, query_db, is_mysql_configured, ensure_schema_compatibility, get_active_financial_year
 from seed_2025_archive import seed_database
 from utils.translations import get_translation
 
@@ -25,8 +25,18 @@ def create_app():
             if not os.path.exists(Config.DATABASE_PATH):
                 print("SQLite database not found. Seeding initial database...")
                 seed_database()
+            elif os.path.getsize(Config.DATABASE_PATH) == 0:
+                raise RuntimeError(
+                    "Configured SQLite database is empty. Refusing to seed over it; "
+                    "restore a backup or remove it intentionally before starting."
+                )
     except Exception as e:
         print(f"Notice during database auto-check: {e}")
+
+    try:
+        ensure_schema_compatibility()
+    except Exception as e:
+        print(f"Notice during schema migration: {e}")
 
     # Register Blueprints
     from routes.auth import auth_bp
@@ -44,6 +54,7 @@ def create_app():
     from routes.public import public_bp
     from routes.settings import settings_bp
     from routes.audit import audit_bp
+    from routes.receipts import receipts_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -60,6 +71,7 @@ def create_app():
     app.register_blueprint(public_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(audit_bp)
+    app.register_blueprint(receipts_bp)
 
     @app.context_processor
     def inject_globals():
@@ -81,7 +93,8 @@ def create_app():
             mandal_name=mandal_name,
             festival_title=festival_title,
             current_user_name=session.get('full_name'),
-            current_user_role=session.get('user_role')
+            current_user_role=session.get('user_role'),
+            active_financial_year=get_active_financial_year()
         )
 
     @app.errorhandler(404)
