@@ -3,7 +3,7 @@
 TRANSLATIONS = {
     'mr': {
         # Navigation & System
-        'app_title': 'जागृती चौक सार्वजनिक गणेश मंडळ',
+        'app_title': 'जागृती चौक गणेशोत्सव मंडळ',
         'sub_title': 'गणेशोत्सव २०२६ हिशोब व व्यवस्थापन प्रणाली',
         'dashboard': 'डॅशबोर्ड',
         'vargani_mgmt': 'वर्गणी व्यवस्थापन',
@@ -119,7 +119,7 @@ TRANSLATIONS = {
     },
     'en': {
         # Navigation & System
-        'app_title': 'Jagriti Chowk Sarvajanik Ganesh Mandal',
+        'app_title': 'Jagriti Chowk Ganeshotsav Mandal',
         'sub_title': 'Ganeshotsav 2026 Accounting & Management System',
         'dashboard': 'Dashboard',
         'vargani_mgmt': 'Vargani Management',

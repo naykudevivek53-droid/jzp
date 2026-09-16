@@ -8,8 +8,8 @@
 
 <div class="receipt-paper">
     <div class="receipt-header">
-        <i class="fa-solid fa-om fa-3x text-warning mb-2"></i>
-        <h3 class="receipt-title">{{ record.mandal_name or 'जागृती चौक सार्वजनिक गणेश मंडळ' }}</h3>
+        <img src="{{ url_for('static', filename='images/ganeshji_logo.svg') }}" alt="श्री गणेश" class="mb-2" style="width: 70px; height: 70px;">
+        <h3 class="receipt-title">{{ record.mandal_name or 'जागृती चौक गणेशोत्सव मंडळ' }}</h3>
         <div class="fw-bold text-dark fs-5">गणेशोत्सव २०२६ - अधिकृत वर्गणी पावती</div>
         <div class="receipt-badge">पावती क्रमांक: {{ record.receipt_no }}</div>
     </div>
@@ -56,7 +56,7 @@
         </div>
         <div class="col-6 text-end">
             <div class="small text-muted">अधिकृत सही (Authorized Signatory)</div>
-            <div class="mt-4 fw-bold text-danger">जागृती चौक सार्वजनिक गणेश मंडळ</div>
+            <div class="mt-4 fw-bold text-danger">जागृती चौक गणेशोत्सव मंडळ</div>
         </div>
     </div>
 </div>

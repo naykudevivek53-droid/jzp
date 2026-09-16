@@ -1,4 +1,16 @@
+# Web server WSGI
+gunicorn==22.0.0
+
+# Flask Web Framework
 Flask==3.0.3
 Werkzeug==3.0.3
+
+# MySQL remote database driver
+PyMySQL==1.1.1
+cryptography==42.0.8
+
+# Excel reporting
 openpyxl==3.1.5
+
+# Environment variables management
 python-dotenv==1.0.1

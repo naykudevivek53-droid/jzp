@@ -1,7 +1,7 @@
 import os
 from flask import Flask, session, g, render_template
 from config import Config
-from database import init_db, query_db
+from database import init_db, query_db, is_mysql_configured
 from seed_2025_archive import seed_database
 from utils.translations import get_translation
 
@@ -9,10 +9,24 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Ensure database exists
-    if not os.path.exists(Config.DATABASE_PATH):
-        print("Database not found. Seeding initial database...")
-        seed_database()
+    # Ensure upload directories exist
+    os.makedirs(Config.BILL_UPLOADS, exist_ok=True)
+    os.makedirs(Config.RECEIPT_UPLOADS, exist_ok=True)
+
+    # Initialize database if needed
+    try:
+        if is_mysql_configured():
+            # For remote MySQL, check if users table exists, initialize if not
+            user_check = query_db("SHOW TABLES LIKE 'users'", one=True)
+            if not user_check:
+                print("Production MySQL tables not detected. Initializing schema and seeding...")
+                seed_database()
+        else:
+            if not os.path.exists(Config.DATABASE_PATH):
+                print("SQLite database not found. Seeding initial database...")
+                seed_database()
+    except Exception as e:
+        print(f"Notice during database auto-check: {e}")
 
     # Register Blueprints
     from routes.auth import auth_bp
@@ -58,7 +72,7 @@ def create_app():
             mandal_name = Config.MANDAL_NAME_MR if lang == 'mr' else Config.MANDAL_NAME_EN
             festival_title = Config.FESTIVAL_TITLE_MR if lang == 'mr' else Config.FESTIVAL_TITLE_EN
         except Exception:
-            mandal_name = "जागृती चौक सार्वजनिक गणेश मंडळ"
+            mandal_name = "जागृती चौक गणेशोत्सव मंडळ"
             festival_title = "गणेशोत्सव २०२६ हिशोब व व्यवस्थापन प्रणाली"
 
         return dict(
@@ -83,5 +97,6 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
-    # Listen on host '0.0.0.0' to enable mobile access on local Wi-Fi / Hotspot
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() in ('true', '1', 't')
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
