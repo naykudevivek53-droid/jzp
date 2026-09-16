@@ -64,17 +64,17 @@ def index():
     """, year_params)
 
     expense_list = query_db(f"""
-        SELECT 'महाप्रसाद खर्च' AS category, item_name AS description,
-               vendor, amount, expense_date AS expense_date, bill_no
+        SELECT id, 'महाप्रसाद खर्च' AS category, item_name AS description,
+               vendor, amount, payment_method, notes, expense_date AS expense_date, bill_no
         FROM mahaprasad_expenses
         {year_filter}
         UNION ALL
-        SELECT category, description, vendor, amount, expense_date, bill_no
+        SELECT id, category, description, vendor, amount, payment_method, notes, expense_date, bill_no
         FROM expenses
         {year_filter}
         UNION ALL
-        SELECT 'DJ / मिरवणूक खर्च' AS category, description,
-               person_or_vendor AS vendor, amount, date AS expense_date,
+        SELECT id, 'DJ / मिरवणूक खर्च' AS category, description,
+               person_or_vendor AS vendor, amount, payment_method, notes, date AS expense_date,
                receipt_or_bill_no AS bill_no
         FROM dj_accounts
         {dj_year_filter}
