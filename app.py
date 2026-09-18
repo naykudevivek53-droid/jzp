@@ -13,30 +13,36 @@ def create_app():
     os.makedirs(Config.BILL_UPLOADS, exist_ok=True)
     os.makedirs(Config.RECEIPT_UPLOADS, exist_ok=True)
 
-    # Initialize database if needed
-    try:
-        if is_mysql_configured():
-            # For remote MySQL, check if users table exists, initialize if not
-            user_check = query_db("SHOW TABLES LIKE 'users'", one=True)
-            if not user_check:
-                print("Production MySQL tables not detected. Initializing schema and seeding...")
-                seed_database()
-        else:
-            if not os.path.exists(Config.DATABASE_PATH):
-                print("SQLite database not found. Seeding initial database...")
-                seed_database()
-            elif os.path.getsize(Config.DATABASE_PATH) == 0:
+    # Never silently create or seed a production database. Render's default
+    # filesystem is ephemeral, so a missing local SQLite file means data would
+    # disappear on restart unless a persistent disk is explicitly mounted.
+    production = str(Config.ENV).lower() == 'production'
+    if is_mysql_configured():
+        user_check = query_db("SHOW TABLES LIKE 'users'", one=True)
+        if not user_check:
+            if production and os.environ.get('ALLOW_DESTRUCTIVE_SEED', '').lower() not in ('1', 'true', 'yes'):
                 raise RuntimeError(
-                    "Configured SQLite database is empty. Refusing to seed over it; "
-                    "restore a backup or remove it intentionally before starting."
+                    "Production database has no users table. Configure the existing "
+                    "DATABASE_URL or intentionally initialize once with ALLOW_DESTRUCTIVE_SEED=true."
                 )
-    except Exception as e:
-        print(f"Notice during database auto-check: {e}")
+            seed_database()
+        print("Database backend: MySQL")
+    else:
+        if not os.path.exists(Config.DATABASE_PATH):
+            if production:
+                raise RuntimeError(
+                    "Production database file is missing. Configure DATABASE_URL for managed "
+                    "MySQL or set DATABASE_PATH to a mounted persistent disk."
+                )
+            seed_database()
+        elif os.path.getsize(Config.DATABASE_PATH) == 0:
+            raise RuntimeError(
+                "Configured SQLite database is empty. Restore a backup or remove it intentionally "
+                "before starting."
+            )
+        print("Database backend: SQLite")
 
-    try:
-        ensure_schema_compatibility()
-    except Exception as e:
-        print(f"Notice during schema migration: {e}")
+    ensure_schema_compatibility()
 
     # Register Blueprints
     from routes.auth import auth_bp

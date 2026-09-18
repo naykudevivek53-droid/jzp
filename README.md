@@ -125,7 +125,7 @@ Redeploying the application code does not delete records when the application ke
 
 The startup path refuses to seed an existing empty SQLite file, and production seeding is disabled unless `ALLOW_DESTRUCTIVE_SEED=true` is explicitly set. These safeguards prevent an accidental redeploy from overwriting a restored or partially mounted database. Never run `seed_2025_archive.py` against an existing production database; it is a destructive initializer.
 
-If a provider recreates its storage without a persistent volume or managed database, no application code can recover the lost local SQLite file. Restore the latest backup or reconnect the original persistent database before starting the new deployment.
+If a provider recreates its storage without a persistent volume or managed database, no application code can recover the lost local SQLite file. Restore the latest backup or reconnect the original persistent database before starting the new deployment. The application now refuses to start instead of creating a new empty production database, so a missing Render database configuration is visible immediately rather than appearing to delete records.
 
 ## 🗄️ File Uploads & Cloud Storage Note
 
