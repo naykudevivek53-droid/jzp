@@ -138,7 +138,10 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label font-weight-bold">वर्गणीदाराचे नाव *</label>
-                        <input type="text" name="contributor_name" class="form-control" placeholder="उदा. सुरेश पाटील" required>
+                        <div class="input-group">
+                            <input id="varganiNameInput" type="text" name="contributor_name" class="form-control" placeholder="उदा. सुरेश पाटील" required>
+                            <button type="button" class="btn btn-outline-secondary voice-input" data-target="varganiNameInput">🎙️</button>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -181,4 +184,16 @@
         </div>
     </div>
 </div>
+<script>
+document.querySelectorAll('.voice-input').forEach(button => {
+    button.addEventListener('click', () => {
+        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Recognition) { alert('या ब्राउझरमध्ये voice input उपलब्ध नाही.'); return; }
+        const recognition = new Recognition();
+        recognition.lang = 'mr-IN';
+        recognition.onresult = event => document.getElementById(button.dataset.target).value = event.results[0][0].transcript;
+        recognition.start();
+    });
+});
+</script>
 {% endblock %}
