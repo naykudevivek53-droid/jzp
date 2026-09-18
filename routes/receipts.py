@@ -85,6 +85,23 @@ def view(id):
                            masked_mobile=('****' + str(receipt['mobile'])[-4:]
                                          if receipt.get('mobile') else None))
 
+@receipts_bp.route('/public/<receipt_no>')
+def public_view(receipt_no):
+    """Public, read-only receipt view with private contact data masked."""
+    receipt = query_db(
+        "SELECT receipt_no, year_label, source_type, donor_name, amount, payment_method, "
+        "payment_date, details FROM receipts WHERE receipt_no=?",
+        (receipt_no,), one=True
+    )
+    if not receipt:
+        return ('Receipt not found', 404)
+    return render_template(
+        'receipts/public_view.html',
+        record=receipt,
+        words_mr=amount_to_words_mr(receipt['amount']),
+        words_en=amount_to_words_en(receipt['amount'])
+    )
+
 @receipts_bp.route('/<int:id>/whatsapp')
 @login_required
 def whatsapp(id):

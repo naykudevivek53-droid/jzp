@@ -150,7 +150,7 @@
                     <tbody>
                         {% for v in vargani_list %}
                         <tr>
-                            <td><code>{{ v.receipt_no }}</code></td>
+                            <td><a href="{{ url_for('receipts.public_view', receipt_no=v.receipt_no) }}"><code>{{ v.receipt_no }}</code></a></td>
                             <td class="fw-bold fs-6">{{ v.contributor_name }}</td>
                             <td class="text-success fw-bold fs-6">₹ {{ "{:,.2f}".format(v.amount) }}</td>
                             <td><span class="badge bg-light text-dark border">{{ v.payment_method }}</span></td>
@@ -185,7 +185,7 @@
                     <tbody>
                         {% for d in donor_list %}
                         <tr>
-                            <td><code>{{ d.receipt_no }}</code></td>
+                            <td><a href="{{ url_for('receipts.public_view', receipt_no=d.receipt_no) }}"><code>{{ d.receipt_no }}</code></a></td>
                             <td class="fw-bold fs-6">{{ d.donor_name }}</td>
                             <td>
                                 <span class="badge {{ 'bg-success' if d.donation_type == 'Money' else 'bg-warning text-dark' }}">{{ 'पैशांची देणगी' if d.donation_type == 'Money' else 'साहित्य देणगी' }}</span>

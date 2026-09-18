@@ -136,3 +136,40 @@ def add_expense():
     log_audit(session.get('user_id'), session.get('username'), 'CREATE', 'mahaprasad_expenses', mpe_id, None, f"Amount: ₹{amount}")
     flash('महाप्रसाद खर्च यशस्वीरित्या नोंदवला गेला.', 'success')
     return redirect(url_for('mahaprasad.index'))
+
+@mahaprasad_bp.route('/mahaprasad/donation/<int:donation_id>/edit', methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
+def edit_donation(donation_id):
+    donation = query_db("SELECT * FROM mahaprasad_donations WHERE id=?", (donation_id,), one=True)
+    if not donation:
+        return ('Donation not found', 404)
+    if request.method == 'POST':
+        mobile = request.form.get('mobile', '').strip()
+        payment_method = request.form.get('payment_method', 'Cash').strip()
+        notes = request.form.get('notes', '').strip()
+        execute_db(
+            "UPDATE mahaprasad_donations SET mobile=?, payment_method=?, notes=? WHERE id=?",
+            (mobile, payment_method, notes, donation_id)
+        )
+        details = 'महाप्रसाद देणगी'
+        if donation['purpose']:
+            details += f" - {donation['purpose']}"
+        if donation['item_details']:
+            details += f" - {donation['item_details']}"
+        if notes:
+            details += f" - {notes}"
+        execute_db(
+            "UPDATE receipts SET mobile=?, payment_method=?, details=? WHERE source_type='MAHAPRASAD' AND source_id=?",
+            (mobile, payment_method, details, donation_id)
+        )
+        execute_db(
+            "UPDATE transactions SET payment_method=? WHERE module='MAHAPRASAD_DONATION' AND reference_no=?",
+            (payment_method, donation['receipt_no'])
+        )
+        log_audit(session.get('user_id'), session.get('username'), 'UPDATE',
+                  'mahaprasad_donations', donation_id, str(donation),
+                  f'Updated mobile and payment method for {donation["receipt_no"]}')
+        flash('देणगीची मोबाईल आणि पेमेंट माहिती अद्ययावत झाली.', 'success')
+        return redirect(url_for('mahaprasad.index'))
+    return render_template('mahaprasad/edit_donation.html', donation=donation)

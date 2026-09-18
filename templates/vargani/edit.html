@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card border-0 shadow-sm rounded-4 p-4">
+    <h4 class="text-success mb-4">वर्गणी माहिती दुरुस्त करा</h4>
+    <p><strong>पावती:</strong> {{ record.receipt_no }} · <strong>नाव:</strong> {{ record.contributor_name }}</p>
+    <form method="post">
+        <div class="mb-3"><label class="form-label">मोबाईल नंबर</label><div class="input-group">
+            <input id="editVarganiMobile" type="tel" name="mobile" class="form-control" value="{{ record.mobile or '' }}">
+            <button type="button" class="btn btn-outline-secondary voice-input" data-target="editVarganiMobile">🎙️</button>
+        </div></div>
+        <div class="mb-3"><label class="form-label">पेमेंट पद्धत</label><select name="payment_method" class="form-select">
+            {% for method in ('Cash', 'UPI', 'Bank') %}<option value="{{ method }}" {% if record.payment_method == method %}selected{% endif %}>{{ method }}</option>{% endfor %}
+        </select></div>
+        <div class="mb-3"><label class="form-label">टीप</label><textarea name="notes" class="form-control">{{ record.notes or '' }}</textarea></div>
+        <button class="btn btn-success" type="submit">माहिती जतन करा</button>
+        <a class="btn btn-light" href="{{ url_for('vargani.index') }}">रद्द करा</a>
+    </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelector('.voice-input')?.addEventListener('click', () => {
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) { alert('या ब्राउझरमध्ये voice input उपलब्ध नाही.'); return; }
+    const recognition = new Recognition();
+    recognition.lang = 'mr-IN';
+    recognition.onresult = event => document.getElementById('editVarganiMobile').value = event.results[0][0].transcript;
+    recognition.start();
+});
+</script>
+{% endblock %}

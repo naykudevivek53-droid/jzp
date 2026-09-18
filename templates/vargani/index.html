@@ -104,6 +104,7 @@
                                 <i class="fa-solid fa-print"></i> पावती
                             </a>
                             {% if session.get('user_role') == 'admin' %}
+                            <a href="{{ url_for('vargani.edit', id=r.id) }}" class="btn btn-outline-success"><i class="fa-solid fa-pen"></i></a>
                             <form action="{{ url_for('vargani.delete', id=r.id) }}" method="POST" class="d-inline" onsubmit="return confirm('खात्री आहे? ही पावती हटवली जाईल.');">
                                 <button type="submit" class="btn btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
                             </form>
