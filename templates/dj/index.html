@@ -44,6 +44,7 @@
                 <table class="table table-mandal mb-0">
                     <thead>
                         <tr>
+                            <th>पावती</th>
                             <th>वर्गणीदार / समूह</th>
                             <th>तपशील</th>
                             <th>रक्कम (₹)</th>
@@ -59,9 +60,22 @@
                             <td class="text-success fw-bold">₹{{ "{:,.2f}".format(i.amount) }}</td>
                             <td><span class="badge bg-light text-dark border">{{ i.payment_method }}</span></td>
                             <td>{{ i.date }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    {% if i.receipt_id %}
+                                    <a class="btn btn-outline-primary" href="{{ url_for('receipts.view', id=i.receipt_id) }}">पावती</a>
+                                    {% endif %}
+                                    {% if session.get('user_role') == 'admin' %}
+                                    <a class="btn btn-outline-success" href="{{ url_for('dj_procession.edit_income', id=i.id) }}">Edit</a>
+                                    <form method="post" action="{{ url_for('dj_procession.delete_income', id=i.id) }}" onsubmit="return confirm('ही नवीन DJ वर्गणी नोंद हटवायची आहे का? संबंधित पावती आणि व्यवहारही हटवले जातील.');">
+                                        <button class="btn btn-outline-danger" type="submit">Delete</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="5" class="text-center text-muted py-3">वर्गणी जमा नोंद नाही.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-3">वर्गणी जमा नोंद नाही.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -118,6 +132,10 @@
                         <input type="text" name="person_name" class="form-control" required>
                     </div>
                     <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">मोबाईल नंबर</label>
+                            <input type="tel" name="mobile" class="form-control">
+                        </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label font-weight-bold">रक्कम (₹) *</label>
                             <input type="number" step="0.01" name="amount" class="form-control" required>

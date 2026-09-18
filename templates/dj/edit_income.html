@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card border-0 shadow-sm rounded-4 p-4">
+    <h4 class="text-primary mb-3">DJ वर्गणी माहिती दुरुस्त करा</h4>
+    <p><strong>पावती / संदर्भ:</strong> {{ record.receipt_or_bill_no or '-' }}</p>
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">वर्गणीदार / समूह *</label>
+            <input name="person_name" class="form-control" value="{{ record.person_or_vendor }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">तपशील</label>
+            <textarea name="description" class="form-control">{{ record.description or '' }}</textarea>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">मोबाईल</label>
+                <input name="mobile" type="tel" class="form-control" value="{{ mobile or '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">रक्कम *</label>
+                <input name="amount" type="number" min="0.01" step="0.01" class="form-control" value="{{ record.amount }}" required>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">पेमेंट पद्धत</label>
+                <select name="payment_method" class="form-select">
+                    {% for method in ('Cash', 'UPI', 'Bank') %}
+                    <option value="{{ method }}" {% if record.payment_method == method %}selected{% endif %}>{{ method }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">दिनांक</label>
+                <input name="entry_date" type="date" class="form-control" value="{{ record.date }}">
+            </div>
+        </div>
+        <div class="mb-3"><label class="form-label">टीप</label><textarea name="notes" class="form-control">{{ record.notes or '' }}</textarea></div>
+        <button class="btn btn-primary" type="submit">जतन करा</button>
+        <a class="btn btn-light" href="{{ url_for('dj_procession.index') }}">रद्द करा</a>
+    </form>
+</div>
+{% endblock %}
